@@ -58,7 +58,7 @@ export function SongStructurePlanner() {
     setIsGenerating(true);
     try {
       const songTypeData = SONG_TYPES[songType as keyof typeof SONG_TYPES];
-      const duration = targetLength ? parseInt(targetLength) : songTypeData.defaultLength;
+      const duration = targetLength && targetLength !== "auto" ? parseInt(targetLength) : songTypeData.defaultLength;
       const bpm = customBPM ? parseInt(customBPM) : songTypeData.defaultBPM;
       
       const prompt = spark.llmPrompt`Create a detailed song arrangement for a ${songType} song at ${bpm} BPM that should be approximately ${duration} seconds long.
@@ -215,7 +215,7 @@ Requirements:
               <SelectValue placeholder="Auto (recommended)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Auto (recommended)</SelectItem>
+              <SelectItem value="auto">Auto (recommended)</SelectItem>
               <SelectItem value="120">2:00 (Short)</SelectItem>
               <SelectItem value="180">3:00 (Standard)</SelectItem>
               <SelectItem value="240">4:00 (Extended)</SelectItem>
