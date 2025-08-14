@@ -7,12 +7,13 @@ import {
   ChordProgressionBuilder, 
   SongStructurePlanner, 
   MelodyHarmonyGenerator,
-  CompositionHistory 
+  CompositionHistory,
+  LyricAlignment
 } from "@/components/music";
-import { Music, Wand2, Layout, History, MusicNote } from "@phosphor-icons/react";
+import { Music, Wand2, Layout, History, MusicNote, Timer } from "@phosphor-icons/react";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("melody");
+  const [activeTab, setActiveTab] = useState("alignment");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -30,7 +31,7 @@ function App() {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="lyrics" className="flex items-center gap-2">
               <Wand2 className="w-4 h-4" />
               Lyrics
@@ -46,6 +47,10 @@ function App() {
             <TabsTrigger value="melody" className="flex items-center gap-2">
               <MusicNote className="w-4 h-4" />
               Melody
+            </TabsTrigger>
+            <TabsTrigger value="alignment" className="flex items-center gap-2">
+              <Timer className="w-4 h-4" />
+              Alignment
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center gap-2">
               <History className="w-4 h-4" />
@@ -117,6 +122,23 @@ function App() {
               </CardHeader>
               <CardContent>
                 <MelodyHarmonyGenerator />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="alignment" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Timer className="w-5 h-5 text-accent" />
+                  Lyric Alignment
+                </CardTitle>
+                <CardDescription>
+                  Match generated lyrics to melody phrasing with time-aligned syllable data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <LyricAlignment />
               </CardContent>
             </Card>
           </TabsContent>

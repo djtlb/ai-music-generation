@@ -4,3 +4,4 @@ export { ChordProgressionBuilder } from './ChordProgressionBuilder';
 export { SongStructurePlanner } from './SongStructurePlanner';
 export { MelodyHarmonyGenerator } from './MelodyHarmonyGenerator';
 export { CompositionHistory } from './CompositionHistory';
+export { LyricAlignment } from './LyricAlignment';
