@@ -40,6 +40,11 @@
 - **Purpose**: Provides transparency and control over the AI music production process
 - **Success Criteria**: Clear understanding of module interconnections and data dependencies
 
+### Style Embeddings & Retrieval System
+- **Functionality**: Audio encoder that converts 10-second clips to style vectors, FAISS index for pattern retrieval, and retrieval-biased token generation during composition
+- **Purpose**: Provides style-aware generation that can reference existing musical patterns to bias new compositions toward specific musical styles
+- **Success Criteria**: Encoded audio correctly identifies target styles, retrieved patterns are musically relevant, and bias effectively influences generation toward retrieved motifs
+
 ### Arrangement Generator (Song Structure Planner)
 - **Functionality**: Generates detailed song arrangements with timing, tempo, BPM, and structure mapping (Intro → Verse → Chorus → Bridge → Outro)
 - **Purpose**: Creates professional song architecture that serves as the foundation for all subsequent modules
@@ -121,8 +126,11 @@
 ### UI Elements & Component Selection
 - **Component Usage**: 
   - Cards for individual modules with clear boundaries
-  - Tabs for navigation between different pipeline stages
+  - Tabs for navigation between different pipeline stages  
   - Pipeline visualization with animated data flow indicators
+  - Style embedding interface with audio upload and encoding progress
+  - Retrieval bias controls with real-time parameter adjustment
+  - Pattern similarity visualization showing retrieved musical motifs
   - Progress indicators for AI processing across modules
   - Badges for module status, data counts, and technical specifications
   - Flow diagrams for showing data relationships
