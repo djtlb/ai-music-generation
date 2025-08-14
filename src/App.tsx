@@ -11,7 +11,7 @@ import {
 import { Music, Wand2, Layout, History } from "@phosphor-icons/react";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("lyrics");
+  const [activeTab, setActiveTab] = useState("structure");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -40,7 +40,7 @@ function App() {
             </TabsTrigger>
             <TabsTrigger value="structure" className="flex items-center gap-2">
               <Layout className="w-4 h-4" />
-              Structure
+              Arrangement
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center gap-2">
               <History className="w-4 h-4" />
@@ -87,10 +87,10 @@ function App() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Layout className="w-5 h-5 text-accent" />
-                  Song Structure Planner
+                  Arrangement Generator
                 </CardTitle>
                 <CardDescription>
-                  Design your song's arrangement with verses, choruses, and bridges
+                  Generate detailed song arrangements with timing, tempo, and structure mapping
                 </CardDescription>
               </CardHeader>
               <CardContent>
