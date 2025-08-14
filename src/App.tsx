@@ -12,9 +12,10 @@ import {
   LyricAlignment,
   SoundDesignEngine,
   MixingMasteringEngine,
-  DataFlowPipeline
+  DataFlowPipeline,
+  TokenizerDemo
 } from "@/components/music";
-import { Music, Wand2, Layout, History, MusicNote, Timer, Waveform, Sliders, ArrowsClockwise } from "@phosphor-icons/react";
+import { Music, Wand2, Layout, History, MusicNote, Timer, Waveform, Sliders, ArrowsClockwise, Code } from "@phosphor-icons/react";
 
 function App() {
   const [activeTab, setActiveTab] = useState("pipeline");
@@ -35,10 +36,14 @@ function App() {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-9 mb-8">
+          <TabsList className="grid w-full grid-cols-10 mb-8">
             <TabsTrigger value="pipeline" className="flex items-center gap-2">
               <ArrowsClockwise className="w-4 h-4" />
               Pipeline
+            </TabsTrigger>
+            <TabsTrigger value="tokenizer" className="flex items-center gap-2">
+              <Code className="w-4 h-4" />
+              Tokenizer
             </TabsTrigger>
             <TabsTrigger value="lyrics" className="flex items-center gap-2">
               <Wand2 className="w-4 h-4" />
@@ -89,6 +94,10 @@ function App() {
                 <DataFlowPipeline />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="tokenizer" className="space-y-6">
+            <TokenizerDemo />
           </TabsContent>
 
           <TabsContent value="lyrics" className="space-y-6">

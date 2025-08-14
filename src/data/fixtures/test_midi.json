@@ -1,0 +1,95 @@
+[
+  {
+    "name": "rock_punk_simple",
+    "style": "rock_punk",
+    "tempo": 160,
+    "key": "Em",
+    "sections": [
+      { "type": "INTRO", "start": 0, "length": 4 },
+      { "type": "VERSE", "start": 4, "length": 8 },
+      { "type": "CHORUS", "start": 12, "length": 8 }
+    ],
+    "tracks": {
+      "KICK": [
+        { "pitch": 36, "velocity": 110, "start": 0, "duration": 1, "track": "KICK" },
+        { "pitch": 36, "velocity": 110, "start": 4, "duration": 1, "track": "KICK" },
+        { "pitch": 36, "velocity": 110, "start": 8, "duration": 1, "track": "KICK" },
+        { "pitch": 36, "velocity": 110, "start": 12, "duration": 1, "track": "KICK" }
+      ],
+      "SNARE": [
+        { "pitch": 38, "velocity": 100, "start": 4, "duration": 1, "track": "SNARE" },
+        { "pitch": 38, "velocity": 100, "start": 12, "duration": 1, "track": "SNARE" }
+      ],
+      "BASS_PICK": [
+        { "pitch": 40, "velocity": 90, "start": 0, "duration": 4, "track": "BASS_PICK" },
+        { "pitch": 43, "velocity": 90, "start": 4, "duration": 4, "track": "BASS_PICK" },
+        { "pitch": 47, "velocity": 90, "start": 8, "duration": 4, "track": "BASS_PICK" }
+      ],
+      "ELECTRIC_POWER": [
+        { "pitch": 64, "velocity": 110, "start": 0, "duration": 8, "track": "ELECTRIC_POWER" },
+        { "pitch": 67, "velocity": 110, "start": 8, "duration": 8, "track": "ELECTRIC_POWER" }
+      ]
+    }
+  },
+  {
+    "name": "rnb_ballad_simple", 
+    "style": "rnb_ballad",
+    "tempo": 70,
+    "key": "Cmaj7",
+    "sections": [
+      { "type": "INTRO", "start": 0, "length": 8 },
+      { "type": "VERSE", "start": 8, "length": 16 }
+    ],
+    "tracks": {
+      "KICK": [
+        { "pitch": 36, "velocity": 70, "start": 0, "duration": 2, "track": "KICK" },
+        { "pitch": 36, "velocity": 70, "start": 8, "duration": 2, "track": "KICK" }
+      ],
+      "PIANO": [
+        { "pitch": 60, "velocity": 70, "start": 0, "duration": 4, "track": "PIANO" },
+        { "pitch": 64, "velocity": 70, "start": 4, "duration": 4, "track": "PIANO" },
+        { "pitch": 67, "velocity": 70, "start": 8, "duration": 4, "track": "PIANO" },
+        { "pitch": 72, "velocity": 70, "start": 12, "duration": 4, "track": "PIANO" }
+      ],
+      "SYNTH_PAD": [
+        { "pitch": 48, "velocity": 50, "start": 0, "duration": 16, "track": "SYNTH_PAD" }
+      ]
+    }
+  },
+  {
+    "name": "country_pop_simple",
+    "style": "country_pop", 
+    "tempo": 120,
+    "key": "G",
+    "sections": [
+      { "type": "VERSE", "start": 0, "length": 16 },
+      { "type": "CHORUS", "start": 16, "length": 16 }
+    ],
+    "tracks": {
+      "KICK": [
+        { "pitch": 36, "velocity": 90, "start": 0, "duration": 1, "track": "KICK" },
+        { "pitch": 36, "velocity": 90, "start": 8, "duration": 1, "track": "KICK" },
+        { "pitch": 36, "velocity": 90, "start": 16, "duration": 1, "track": "KICK" },
+        { "pitch": 36, "velocity": 90, "start": 24, "duration": 1, "track": "KICK" }
+      ],
+      "SNARE": [
+        { "pitch": 38, "velocity": 80, "start": 4, "duration": 1, "track": "SNARE" },
+        { "pitch": 38, "velocity": 80, "start": 12, "duration": 1, "track": "SNARE" },
+        { "pitch": 38, "velocity": 80, "start": 20, "duration": 1, "track": "SNARE" },
+        { "pitch": 38, "velocity": 80, "start": 28, "duration": 1, "track": "SNARE" }
+      ],
+      "ACOUSTIC_STRUM": [
+        { "pitch": 55, "velocity": 80, "start": 0, "duration": 2, "track": "ACOUSTIC_STRUM" },
+        { "pitch": 59, "velocity": 80, "start": 2, "duration": 2, "track": "ACOUSTIC_STRUM" },
+        { "pitch": 62, "velocity": 80, "start": 4, "duration": 2, "track": "ACOUSTIC_STRUM" },
+        { "pitch": 55, "velocity": 80, "start": 6, "duration": 2, "track": "ACOUSTIC_STRUM" }
+      ],
+      "LEAD": [
+        { "pitch": 79, "velocity": 90, "start": 16, "duration": 4, "track": "LEAD" },
+        { "pitch": 81, "velocity": 90, "start": 20, "duration": 4, "track": "LEAD" },
+        { "pitch": 83, "velocity": 90, "start": 24, "duration": 4, "track": "LEAD" },
+        { "pitch": 79, "velocity": 90, "start": 28, "duration": 4, "track": "LEAD" }
+      ]
+    }
+  }
+]
