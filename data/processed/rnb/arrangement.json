@@ -1,0 +1,31 @@
+[
+  {
+    "style": "rnb_ballad",
+    "tempo": 70,
+    "duration_bars": 96,
+    "sections": [
+      {"type": "INTRO", "start_bar": 0, "length_bars": 8},
+      {"type": "VERSE", "start_bar": 8, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 24, "length_bars": 16},
+      {"type": "VERSE", "start_bar": 40, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 56, "length_bars": 16},
+      {"type": "BRIDGE", "start_bar": 72, "length_bars": 8},
+      {"type": "CHORUS", "start_bar": 80, "length_bars": 16}
+    ]
+  },
+  {
+    "style": "rnb_ballad",
+    "tempo": 90,
+    "duration_bars": 88,
+    "sections": [
+      {"type": "INTRO", "start_bar": 0, "length_bars": 4},
+      {"type": "VERSE", "start_bar": 4, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 20, "length_bars": 16},
+      {"type": "VERSE", "start_bar": 36, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 52, "length_bars": 16},
+      {"type": "BRIDGE", "start_bar": 68, "length_bars": 8},
+      {"type": "CHORUS", "start_bar": 76, "length_bars": 8},
+      {"type": "OUTRO", "start_bar": 84, "length_bars": 4}
+    ]
+  }
+]

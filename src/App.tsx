@@ -13,9 +13,10 @@ import {
   SoundDesignEngine,
   MixingMasteringEngine,
   DataFlowPipeline,
-  TokenizerDemo
+  TokenizerDemo,
+  ArrangementTransformerDemo
 } from "@/components/music";
-import { Music, Wand2, Layout, History, MusicNote, Timer, Waveform, Sliders, ArrowsClockwise, Code } from "@phosphor-icons/react";
+import { Music, Wand2, Layout, History, MusicNote, Timer, Waveform, Sliders, ArrowsClockwise, Code, Brain } from "@phosphor-icons/react";
 
 function App() {
   const [activeTab, setActiveTab] = useState("pipeline");
@@ -36,10 +37,14 @@ function App() {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-10 mb-8">
+          <TabsList className="grid w-full grid-cols-11 mb-8">
             <TabsTrigger value="pipeline" className="flex items-center gap-2">
               <ArrowsClockwise className="w-4 h-4" />
               Pipeline
+            </TabsTrigger>
+            <TabsTrigger value="transformer" className="flex items-center gap-2">
+              <Brain className="w-4 h-4" />
+              Transformer
             </TabsTrigger>
             <TabsTrigger value="tokenizer" className="flex items-center gap-2">
               <Code className="w-4 h-4" />
@@ -92,6 +97,23 @@ function App() {
               </CardHeader>
               <CardContent>
                 <DataFlowPipeline />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="transformer" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-accent" />
+                  Arrangement Transformer
+                </CardTitle>
+                <CardDescription>
+                  Generate song arrangements using a Transformer decoder with style conditioning, teacher forcing, and coverage penalty
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ArrangementTransformerDemo />
               </CardContent>
             </Card>
           </TabsContent>

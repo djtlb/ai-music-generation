@@ -1,0 +1,42 @@
+[
+  {
+    "style": "rock_punk",
+    "tempo": 150,
+    "duration_bars": 64,
+    "sections": [
+      {"type": "INTRO", "start_bar": 0, "length_bars": 4},
+      {"type": "VERSE", "start_bar": 4, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 20, "length_bars": 16},
+      {"type": "VERSE", "start_bar": 36, "length_bars": 16},
+      {"type": "BRIDGE", "start_bar": 52, "length_bars": 8},
+      {"type": "OUTRO", "start_bar": 60, "length_bars": 4}
+    ]
+  },
+  {
+    "style": "rnb_ballad",
+    "tempo": 80,
+    "duration_bars": 80,
+    "sections": [
+      {"type": "INTRO", "start_bar": 0, "length_bars": 8},
+      {"type": "VERSE", "start_bar": 8, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 24, "length_bars": 16},
+      {"type": "VERSE", "start_bar": 40, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 56, "length_bars": 16},
+      {"type": "BRIDGE", "start_bar": 72, "length_bars": 4},
+      {"type": "OUTRO", "start_bar": 76, "length_bars": 4}
+    ]
+  },
+  {
+    "style": "country_pop",
+    "tempo": 120,
+    "duration_bars": 72,
+    "sections": [
+      {"type": "INTRO", "start_bar": 0, "length_bars": 4},
+      {"type": "VERSE", "start_bar": 4, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 20, "length_bars": 16},
+      {"type": "VERSE", "start_bar": 36, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 52, "length_bars": 16},
+      {"type": "OUTRO", "start_bar": 68, "length_bars": 4}
+    ]
+  }
+]

@@ -9,3 +9,4 @@ export { SoundDesignEngine } from './SoundDesignEngine';
 export { MixingMasteringEngine } from './MixingMasteringEngine';
 export { DataFlowPipeline } from './DataFlowPipeline';
 export { TokenizerDemo } from './TokenizerDemo';
+export { ArrangementTransformerDemo } from './ArrangementTransformerDemo';

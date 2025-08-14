@@ -1,0 +1,27 @@
+[
+  {
+    "style": "country_pop",
+    "tempo": 130,
+    "duration_bars": 68,
+    "sections": [
+      {"type": "INTRO", "start_bar": 0, "length_bars": 4},
+      {"type": "VERSE", "start_bar": 4, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 20, "length_bars": 16},
+      {"type": "VERSE", "start_bar": 36, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 52, "length_bars": 16}
+    ]
+  },
+  {
+    "style": "country_pop",
+    "tempo": 110,
+    "duration_bars": 76,
+    "sections": [
+      {"type": "INTRO", "start_bar": 0, "length_bars": 4},
+      {"type": "VERSE", "start_bar": 4, "length_bars": 16},
+      {"type": "CHORUS", "start_bar": 20, "length_bars": 16},
+      {"type": "VERSE", "start_bar": 36, "length_bars": 16},
+      {"type": "BRIDGE", "start_bar": 52, "length_bars": 8},
+      {"type": "CHORUS", "start_bar": 60, "length_bars": 16}
+    ]
+  }
+]

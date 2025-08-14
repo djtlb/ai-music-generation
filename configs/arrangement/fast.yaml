@@ -1,0 +1,79 @@
+# Fast training configuration for development
+model:
+  name: "ArrangementTransformer"
+  d_model: 256
+  n_heads: 4
+  n_layers: 3
+  d_ff: 1024
+  max_seq_length: 64
+  dropout: 0.1
+  
+  coverage_penalty: 0.2
+  max_repeat_length: 3
+  
+  style_embedding_dim: 32
+  
+  min_sections: 2
+  max_sections: 6
+  section_types: ['INTRO', 'VERSE', 'CHORUS', 'BRIDGE', 'OUTRO']
+  
+  section_bar_constraints:
+    INTRO: [2, 4]
+    VERSE: [8, 16]
+    CHORUS: [8, 16]
+    BRIDGE: [4, 8]
+    OUTRO: [2, 4]
+
+data:
+  dataset_path: "/data/processed/**/arrangement.json"
+  batch_size: 16
+  num_workers: 2
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+  
+  tempo_augment_range: [0.9, 1.1]
+  duration_augment_range: [0.8, 1.2]
+
+training:
+  optimizer: "AdamW"
+  learning_rate: 0.001
+  weight_decay: 0.01
+  gradient_clip_val: 0.5
+  
+  scheduler: "StepLR"
+  lr_scheduler_params:
+    step_size: 20
+    gamma: 0.5
+  
+  max_epochs: 50
+  early_stopping_patience: 5
+  early_stopping_monitor: "val_loss"
+  
+  teacher_forcing_ratio: 0.9
+  teacher_forcing_decay: 0.99
+  min_teacher_forcing: 0.3
+
+generation:
+  temperature: 1.0
+  top_k: 30
+  top_p: 0.8
+  
+  beam_size: 3
+  length_penalty: 1.0
+  
+  max_generation_length: 32
+  eos_token_penalty: 0.2
+
+logging:
+  log_level: "INFO"
+  wandb_project: "ai-music-arrangement-dev"
+  checkpoint_dir: "./checkpoints/arrangement_dev"
+  log_every_n_steps: 25
+  val_check_interval: 0.5
+
+hardware:
+  accelerator: "auto"
+  devices: 1
+  precision: "32"
+  strategy: "auto"
