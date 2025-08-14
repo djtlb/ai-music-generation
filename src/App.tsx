@@ -15,12 +15,13 @@ import {
   DataFlowPipeline,
   TokenizerDemo,
   ArrangementTransformerDemo,
-  StyleEmbeddingDemo
+  StyleEmbeddingDemo,
+  CriticRewardDemo
 } from "@/components/music";
-import { Music, Wand2, Layout, History, MusicNote, Timer, Waveform, Sliders, ArrowsClockwise, Code, Brain, Sparkles } from "@phosphor-icons/react";
+import { Music, Wand2, Layout, History, MusicNote, Timer, Waveform, Sliders, ArrowsClockwise, Code, Brain, Sparkles, Award } from "@phosphor-icons/react";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("pipeline");
+  const [activeTab, setActiveTab] = useState("critic");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -38,10 +39,14 @@ function App() {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-12 mb-8">
+          <TabsList className="grid w-full grid-cols-13 mb-8">
             <TabsTrigger value="pipeline" className="flex items-center gap-2">
               <ArrowsClockwise className="w-4 h-4" />
               Pipeline
+            </TabsTrigger>
+            <TabsTrigger value="critic" className="flex items-center gap-2">
+              <Award className="w-4 h-4" />
+              Critic
             </TabsTrigger>
             <TabsTrigger value="style" className="flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
@@ -102,6 +107,23 @@ function App() {
               </CardHeader>
               <CardContent>
                 <DataFlowPipeline />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="critic" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="w-5 h-5 text-accent" />
+                  Critic Reward Model & DPO Finetuning
+                </CardTitle>
+                <CardDescription>
+                  Train a critic model to score audio clips on quality dimensions, then use DPO to align generation with human preferences
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CriticRewardDemo />
               </CardContent>
             </Card>
           </TabsContent>

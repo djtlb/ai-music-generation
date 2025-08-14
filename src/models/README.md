@@ -1,209 +1,131 @@
-# MIDI Tokenizer Implementation
+# Critic Reward Model & DPO Finetuning
 
-## Overview
+This directory contains the implementation of a critic reward model for music quality assessment and Direct Preference Optimization (DPO) finetuning for preference-aligned music generation.
 
-A comprehensive tokenizer that converts multi-track MIDI files into token sequences optimized for machine learning training. Supports style-aware encoding with lossless round-trip conversion.
-
-## Features
-
-### Supported Tokens
-
-- **STYLE**: `rock_punk`, `rnb_ballad`, `country_pop`
-- **TEMPO**: 60-260 BPM (steps of 2)
-- **KEY**: All major/minor keys (C, Cm, C#, etc.)
-- **SECTION**: `INTRO`, `VERSE`, `CHORUS`, `BRIDGE`, `OUTRO`
-- **BAR**: Bar boundaries and timing
-- **POS**: 1/16 note grid positions (0-63)
-- **INST**: Instrument roles (`KICK`, `SNARE`, `BASS_PICK`, `ACOUSTIC_STRUM`, `PIANO`, `LEAD`, etc.)
-- **CHORD**: Major, minor, 7th, extended chords
-- **NOTE_ON/NOTE_OFF**: Note events with velocity/duration buckets
-- **VEL**: Velocity buckets (pp, p, mp, mf, f, ff)
-- **DUR**: Duration buckets (16th, 8th, quarter, etc.)
-
-### Vocabulary Statistics
-
-- **Total Tokens**: 889 unique tokens
-- **Styles**: 3 (rock_punk, rnb_ballad, country_pop)
-- **Instruments**: 15 instrument roles
-- **Temporal Resolution**: 1/16 note grid
-- **MIDI Range**: Full 128-note range
-- **Chord Support**: 50+ chord types
-
-## File Structure
+## Architecture Overview
 
 ```
-src/
-├── models/
-│   ├── tokenizer.ts          # Main tokenizer implementation
-│   ├── vocab.json           # Vocabulary definition
-│   ├── tokenizer.test.ts    # Comprehensive test suite
-│   └── demo.ts              # Simple usage demonstration
-├── data/
-│   └── fixtures/
-│       └── test_midi.json   # Test MIDI fixtures
-├── notebooks/
-│   └── tokenizer_smoke.ts   # Interactive analysis notebook
-└── components/
-    └── music/
-        └── TokenizerDemo.tsx # UI component for testing
+critic/
+├── model.py          # Critic neural network architecture
+├── dataset.py        # Data loading and preprocessing
+├── train.py          # Training loop and utilities
+└── evaluate.py       # Comprehensive evaluation suite
+
+finetune/
+└── dpo.py            # DPO training implementation
+
+scripts/
+├── train_critic.py   # CLI for critic training
+├── finetune_dpo.py   # CLI for DPO finetuning
+└── evaluate_model.py # CLI for evaluation
 ```
 
-## Quick Start
+## Quality Dimensions
 
-### Basic Usage
+The critic model scores audio clips on:
 
-```typescript
-import { MidiTokenizer, MultiTrackMidi } from './models/tokenizer';
+- **hook_strength**: Memorability and catchiness of melodic content
+- **harmonic_stability**: Quality and coherence of chord progressions  
+- **arrangement_contrast**: Dynamic variation and structural interest
+- **mix_quality**: Technical audio quality (LUFS, spectral balance)
+- **style_match**: Consistency with target musical style
 
-// Initialize tokenizer
-const tokenizer = new MidiTokenizer();
+## Usage
 
-// Create MIDI data
-const midi: MultiTrackMidi = {
-  style: 'rock_punk',
-  tempo: 140,
-  key: 'Em',
-  sections: [{ type: 'VERSE', start: 0, length: 4 }],
-  tracks: {
-    KICK: [
-      { pitch: 36, velocity: 110, start: 0, duration: 1, track: 'KICK' }
-    ]
+### 1. Train Critic Model
+
+```bash
+# Create mock training data
+python scripts/train_critic.py --mock_data --data_csv mock_preferences.csv
+
+# Train on real data
+python scripts/train_critic.py \
+  --data_csv preference_data.csv \
+  --audio_dir ./audio_clips \
+  --epochs 100 \
+  --batch_size 16 \
+  --learning_rate 1e-3
+```
+
+### 2. DPO Finetuning
+
+```bash
+# Create mock DPO data
+python scripts/finetune_dpo.py --mock_data --data_path ./mock_dpo_data/
+
+# Run DPO finetuning
+python scripts/finetune_dpo.py \
+  --data_path dpo_pairs.json \
+  --critic_checkpoint logs/critic_training/checkpoint_best.pth \
+  --epochs 5 \
+  --batch_size 8 \
+  --beta 0.1
+```
+
+### 3. Evaluation
+
+```bash
+# Create validation playlist
+python scripts/evaluate_model.py --create_playlist --test_data validation.csv
+
+# Evaluate critic performance
+python scripts/evaluate_model.py \
+  --critic_checkpoint logs/critic_training/checkpoint_best.pth \
+  --test_data validation.csv \
+  --audio_dir ./validation_audio
+
+# Compare before/after DPO
+python scripts/evaluate_model.py \
+  --critic_checkpoint logs/critic_training/checkpoint_best.pth \
+  --test_data validation.csv \
+  --audio_dir ./validation_audio \
+  --before_dpo before_dpo.pth \
+  --after_dpo after_dpo.pth
+```
+
+## Data Format
+
+### Preference CSV Format
+
+```csv
+clip_id,audio_file,style,preference_rank,hook_strength,harmonic_stability,arrangement_contrast,mix_quality,style_match,overall_score
+clip_0001,audio_0001.wav,rock_punk,1,0.85,0.78,0.92,0.76,0.88,0.84
+clip_0002,audio_0002.wav,rnb_ballad,2,0.72,0.89,0.65,0.91,0.83,0.80
+```
+
+### DPO Pairs JSON Format
+
+```json
+[
+  {
+    "chosen_sequences": [1, 45, 123, ...],
+    "rejected_sequences": [1, 67, 89, ...], 
+    "style_ids": 0
   }
-};
-
-// Encode to tokens
-const tokens = tokenizer.encode(midi);
-console.log(`Encoded to ${tokens.length} tokens`);
-
-// Decode back to MIDI
-const decoded = tokenizer.decode(tokens);
-console.log('Round-trip successful:', 
-  JSON.stringify(midi) === JSON.stringify(decoded));
-```
-
-### Running Tests
-
-```typescript
-import TokenizerTester from './models/tokenizer.test';
-
-const tester = new TokenizerTester();
-const results = tester.runAllTests();
-
-const passed = results.filter(r => r.passed).length;
-console.log(`Tests: ${passed}/${results.length} passed`);
-```
-
-## Test Results
-
-### Round-trip Tests
-- ✅ `rock_punk_simple`: 23 tokens
-- ✅ `rnb_ballad_simple`: 19 tokens  
-- ✅ `country_pop_simple`: 35 tokens
-- ✅ `empty_midi`: 5 tokens
-- ✅ `single_note`: 11 tokens
-- ✅ `overlapping_notes`: 21 tokens
-
-### Performance
-- **Encoding**: ~0.5ms average per MIDI file
-- **Decoding**: ~0.8ms average per token sequence
-- **Memory**: <1MB vocabulary size
-
-## Token Format
-
-### Temporal Structure
-```
-<START> → STYLES_rock_punk → TEMPOS_140 → KEYS_Em → 
-SECTIONS_VERSE → BAR → POSITIONS_POS_0 → NOTE_ON → 
-INSTRUMENTS_KICK → PITCHES_36 → VELOCITIES_110 → 
-POSITIONS_POS_1 → NOTE_OFF → INSTRUMENTS_KICK → 
-PITCHES_36 → DURATIONS_DUR_1 → <END>
-```
-
-### Style-Specific Features
-
-#### Rock/Punk
-- Aggressive velocities (f, ff)
-- Power chord progressions
-- Distorted guitar timbres
-- Fast tempos (150-180 BPM)
-
-#### R&B/Ballad  
-- Smooth velocities (mp, mf)
-- Extended chord harmonies
-- Sustained pad sounds
-- Slow tempos (60-80 BPM)
-
-#### Country/Pop
-- Natural velocities (mf)
-- Open chord voicings
-- Acoustic guitar strums
-- Moderate tempos (100-130 BPM)
-
-## Integration with ML Pipeline
-
-### Training Data Format
-```python
-# Example training sequence
-tokens = [
-  tokenizer.getTokenId('<START>'),
-  tokenizer.getTokenId('STYLES_rock_punk'),
-  tokenizer.getTokenId('TEMPOS_140'),
-  # ... rest of sequence
-  tokenizer.getTokenId('<END>')
 ]
 ```
 
-### Sequence Length
-- **Average**: 25 tokens per simple composition
-- **Range**: 5-100+ tokens depending on complexity
-- **Context Window**: Supports sequences up to 2048 tokens
+## Target Metrics
 
-## Architecture Integration
+### Critic Performance
+- **Overall Accuracy**: >85% within 0.1 threshold
+- **Quality Correlation**: >0.8 for each dimension
+- **Preference Alignment**: >80% pairwise accuracy
 
-### Data Flow
-```
-MIDI Input → Tokenizer.encode() → Token Sequence → 
-ML Model → Generated Tokens → Tokenizer.decode() → MIDI Output
-```
+### DPO Results
+- **Win Rate**: >80% preference alignment
+- **Reward Improvement**: +15% average score increase
+- **KL Divergence**: <0.1 (maintains model coherence)
 
-### Style Consistency
-- Style token propagates through entire sequence
-- Instrument selection influenced by style
-- Temporal patterns reflect genre conventions
-- Harmonic content matches style expectations
+## Integration with Pipeline
 
-## Advanced Features
+The critic model integrates with the broader music generation pipeline:
 
-### Lossy vs Lossless
-- **Velocity**: Bucketed to 6 levels (allows slight deviation)
-- **Duration**: Bucketed to 7 musical values
-- **Timing**: Quantized to 1/16 note grid
-- **Pitch**: Exact MIDI values preserved
-- **Structure**: Exact section boundaries preserved
+1. **Arrangement Generator** → sequences
+2. **Melody/Harmony Generator** → MIDI tracks  
+3. **Sound Design** → audio stems
+4. **Mixing/Mastering** → final audio
+5. **Critic Evaluation** → quality scores
+6. **DPO Finetuning** → preference alignment
 
-### Error Handling
-- Unknown tokens mapped to `<UNK>`
-- Malformed input gracefully handled
-- Round-trip validation ensures data integrity
-- Comprehensive test coverage
-
-## Future Enhancements
-
-1. **Extended Styles**: Add jazz, electronic, classical styles
-2. **Micro-timing**: Sub-16th note resolution for groove
-3. **Dynamics**: Continuous velocity curves
-4. **Articulation**: Staccato, legato, accent markings
-5. **Effects**: Reverb, distortion, filter parameters
-
-## Contributing
-
-Test files are located in `src/data/fixtures/`. To add new test cases:
-
-1. Create MIDI JSON in the fixture format
-2. Add to `test_midi.json`
-3. Run test suite to verify round-trip accuracy
-4. Update documentation with new test results
-
----
-
-**Note**: This tokenizer is designed for training transformer-based music generation models with style-aware conditioning.
+This creates a complete feedback loop for improving generation quality through human preference optimization.
