@@ -20,6 +20,7 @@ interface LyricComposition {
   timestamp: number;
 }
 
+// AI-powered lyric generation component
 export function LyricGenerator() {
   const [genre, setGenre] = useState("");
   const [mood, setMood] = useState("");

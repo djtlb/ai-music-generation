@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LyricGenerator } from "@/components/music/LyricGenerator";
-import { ChordProgressionBuilder } from "@/components/music/ChordProgressionBuilder";
-import { SongStructurePlanner } from "@/components/music/SongStructurePlanner";
-import { CompositionHistory } from "@/components/music/CompositionHistory";
+// Music composition components
+import { 
+  LyricGenerator, 
+  ChordProgressionBuilder, 
+  SongStructurePlanner, 
+  CompositionHistory 
+} from "@/components/music";
 import { Music, Wand2, Layout, History } from "@phosphor-icons/react";
 
 function App() {
