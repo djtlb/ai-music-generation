@@ -1,13 +1,13 @@
-"""
-MIDI Tokenizer Smoke Test Notebook
-==================================
-
-This notebook demonstrates the MIDI tokenizer functionality with interactive examples.
-Run each section to explore encoding, decoding, and analysis of multi-track MIDI data.
-
-Note: This is a TypeScript implementation running in a web environment,
-but presented in notebook format for educational purposes.
-"""
+/**
+ * MIDI Tokenizer Smoke Test Notebook
+ * ==================================
+ * 
+ * This notebook demonstrates the MIDI tokenizer functionality with interactive examples.
+ * Run each section to explore encoding, decoding, and analysis of multi-track MIDI data.
+ * 
+ * Note: This is a TypeScript implementation running in a web environment,
+ * but presented in notebook format for educational purposes.
+ */
 
 import { MidiTokenizer, MultiTrackMidi } from '../models/tokenizer';
 import TokenizerTester, { testFixtures } from '../models/tokenizer.test';

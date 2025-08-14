@@ -4,8 +4,8 @@
  * Ensures lossless encode/decode operations on test fixtures
  */
 
-import { MidiTokenizer, MultiTrackMidi } from '../models/tokenizer';
-import testFixtures from '../data/fixtures/test_midi.json';
+import { MidiTokenizer, MultiTrackMidi } from './tokenizer';
+import testFixturesData from '../data/fixtures/test_midi.json';
 
 export interface TestResult {
   testName: string;
@@ -15,6 +15,9 @@ export interface TestResult {
   decodedTokenCount?: number;
   details?: any;
 }
+
+// Export testFixtures for external use
+export const testFixtures = testFixturesData;
 
 export class TokenizerTester {
   private tokenizer: MidiTokenizer;
@@ -407,9 +410,6 @@ export class TokenizerTester {
     }
     
     return report;
-  }
 }
 
-// Export for use in notebooks and other tests
-export { testFixtures };
 export default TokenizerTester;
