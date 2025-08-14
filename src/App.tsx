@@ -8,12 +8,15 @@ import {
   SongStructurePlanner, 
   MelodyHarmonyGenerator,
   CompositionHistory,
-  LyricAlignment
+  LyricAlignment,
+  SoundDesignEngine,
+  MixingMasteringEngine,
+  DataFlowPipeline
 } from "@/components/music";
-import { Music, Wand2, Layout, History, MusicNote, Timer } from "@phosphor-icons/react";
+import { Music, Wand2, Layout, History, MusicNote, Timer, Waveform, Sliders, ArrowsClockwise } from "@phosphor-icons/react";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("alignment");
+  const [activeTab, setActiveTab] = useState("pipeline");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -26,12 +29,16 @@ function App() {
             <h1 className="text-4xl font-bold tracking-tight">AI Music Composer</h1>
           </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Create original music with AI-powered tools for lyrics, chord progressions, song arrangements, and complete MIDI compositions
+            Create original music with AI-powered tools for lyrics, chord progressions, song arrangements, and complete MIDI compositions. Features a modular data flow pipeline with loose coupling and style consistency.
           </p>
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-8">
+          <TabsList className="grid w-full grid-cols-9 mb-8">
+            <TabsTrigger value="pipeline" className="flex items-center gap-2">
+              <ArrowsClockwise className="w-4 h-4" />
+              Pipeline
+            </TabsTrigger>
             <TabsTrigger value="lyrics" className="flex items-center gap-2">
               <Wand2 className="w-4 h-4" />
               Lyrics
@@ -52,11 +59,36 @@ function App() {
               <Timer className="w-4 h-4" />
               Alignment
             </TabsTrigger>
+            <TabsTrigger value="sound" className="flex items-center gap-2">
+              <Waveform className="w-4 h-4" />
+              Sound
+            </TabsTrigger>
+            <TabsTrigger value="mixing" className="flex items-center gap-2">
+              <Sliders className="w-4 h-4" />
+              Mix/Master
+            </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center gap-2">
               <History className="w-4 h-4" />
               History
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="pipeline" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowsClockwise className="w-5 h-5 text-accent" />
+                  Data Flow Pipeline
+                </CardTitle>
+                <CardDescription>
+                  Visualize how data flows between modules in the AI music production system
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DataFlowPipeline />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="lyrics" className="space-y-6">
             <Card>
@@ -139,6 +171,40 @@ function App() {
               </CardHeader>
               <CardContent>
                 <LyricAlignment />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="sound" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Waveform className="w-5 h-5 text-accent" />
+                  Sound Design Engine
+                </CardTitle>
+                <CardDescription>
+                  Generate synthesizer patches and audio textures based on composition and style requirements
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SoundDesignEngine />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="mixing" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sliders className="w-5 h-5 text-accent" />
+                  Mixing & Mastering Engine
+                </CardTitle>
+                <CardDescription>
+                  Professional mix and master settings optimized for your composition and sound design
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <MixingMasteringEngine />
               </CardContent>
             </Card>
           </TabsContent>

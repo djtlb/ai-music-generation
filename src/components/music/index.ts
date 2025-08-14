@@ -5,3 +5,6 @@ export { SongStructurePlanner } from './SongStructurePlanner';
 export { MelodyHarmonyGenerator } from './MelodyHarmonyGenerator';
 export { CompositionHistory } from './CompositionHistory';
 export { LyricAlignment } from './LyricAlignment';
+export { SoundDesignEngine } from './SoundDesignEngine';
+export { MixingMasteringEngine } from './MixingMasteringEngine';
+export { DataFlowPipeline } from './DataFlowPipeline';
