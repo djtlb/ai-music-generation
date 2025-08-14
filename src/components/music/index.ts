@@ -12,3 +12,5 @@ export { TokenizerDemo } from './TokenizerDemo';
 export { ArrangementTransformerDemo } from './ArrangementTransformerDemo';
 export { StyleEmbeddingDemo } from './StyleEmbeddingDemo';
 export { CriticRewardDemo } from './CriticRewardDemo';
+export { IntegratedCompositionWorkflow } from './IntegratedCompositionWorkflow';
+export { PipelineStatusMonitor } from './PipelineStatusMonitor';

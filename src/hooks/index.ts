@@ -1,2 +1,3 @@
 export { useKV } from './useKV';
-export { useMobile } from './use-mobile';
+export { useIsMobile } from './use-mobile';
+export { useMusicPipeline } from './useMusicPipeline';
