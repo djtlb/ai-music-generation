@@ -1,0 +1,313 @@
+"""
+Style-specific mixing and mastering targets.
+
+This file defines the target LUFS, spectral characteristics, and stereo imaging
+for different musical styles supported by the auto-mixing system.
+"""
+
+# Style-specific targets for auto-mixing system
+style_targets:
+  
+  rock_punk:
+    # Loudness targets
+    lufs: -9.5              # Aggressive loudness for modern rock/punk
+    true_peak_db: -1.0      # Allow some headroom for dynamics
+    
+    # Spectral characteristics
+    spectral_centroid_hz: 2800    # Bright, aggressive sound
+    spectral_centroid_range:
+      min: 2500
+      max: 3200
+    
+    # Stereo imaging
+    stereo_ms_ratio: 0.6          # Moderate stereo width
+    stereo_ms_range:
+      min: 0.4
+      max: 0.8
+    
+    # Frequency balance preferences
+    frequency_balance:
+      low_energy: 0.3       # Bass prominence (0-1)
+      mid_energy: 0.5       # Midrange clarity
+      high_energy: 0.4      # Treble sparkle
+    
+    # Dynamic characteristics
+    dynamics:
+      crest_factor: 8.0     # Moderate compression
+      rms_target: -18.0     # RMS level target
+      
+    # Mix characteristics
+    mix_style:
+      compression_heavy: true
+      saturation_level: 0.3
+      stereo_enhancement: moderate
+      
+  rnb_ballad:
+    # Loudness targets
+    lufs: -12.0             # More dynamic, less compressed
+    true_peak_db: -1.5      # Extra headroom for dynamics
+    
+    # Spectral characteristics  
+    spectral_centroid_hz: 1800    # Warmer, smoother sound
+    spectral_centroid_range:
+      min: 1500
+      max: 2200
+    
+    # Stereo imaging
+    stereo_ms_ratio: 0.8          # Wide stereo image
+    stereo_ms_range:
+      min: 0.6
+      max: 1.0
+    
+    # Frequency balance
+    frequency_balance:
+      low_energy: 0.4       # Rich bass
+      mid_energy: 0.6       # Vocal clarity
+      high_energy: 0.3      # Smooth highs
+    
+    # Dynamic characteristics
+    dynamics:
+      crest_factor: 12.0    # Preserve dynamics
+      rms_target: -20.0     # Lower RMS for dynamics
+      
+    # Mix characteristics
+    mix_style:
+      compression_heavy: false
+      saturation_level: 0.1
+      stereo_enhancement: wide
+      
+  country_pop:
+    # Loudness targets
+    lufs: -10.5             # Radio-ready loudness
+    true_peak_db: -1.0      # Standard headroom
+    
+    # Spectral characteristics
+    spectral_centroid_hz: 2200    # Clear, present sound
+    spectral_centroid_range:
+      min: 1900
+      max: 2600
+    
+    # Stereo imaging
+    stereo_ms_ratio: 0.7          # Balanced stereo width
+    stereo_ms_range:
+      min: 0.5
+      max: 0.9
+    
+    # Frequency balance
+    frequency_balance:
+      low_energy: 0.35      # Punchy but not overwhelming bass
+      mid_energy: 0.55      # Vocal and instrument clarity
+      high_energy: 0.35     # Crisp but not harsh highs
+    
+    # Dynamic characteristics
+    dynamics:
+      crest_factor: 10.0    # Moderate dynamics
+      rms_target: -19.0     # Balanced level
+      
+    # Mix characteristics
+    mix_style:
+      compression_heavy: moderate
+      saturation_level: 0.2
+      stereo_enhancement: balanced
+
+# Additional style variations
+style_variants:
+  
+  rock_punk_modern:
+    parent: rock_punk
+    lufs: -8.5              # Even louder for streaming
+    spectral_centroid_hz: 3000
+    
+  rock_punk_vintage:
+    parent: rock_punk  
+    lufs: -11.0             # More dynamic vintage sound
+    spectral_centroid_hz: 2500
+    saturation_level: 0.5   # More tape saturation
+    
+  rnb_modern:
+    parent: rnb_ballad
+    lufs: -11.0             # Slightly louder for modern taste
+    stereo_ms_ratio: 0.9    # Very wide
+    
+  country_classic:
+    parent: country_pop
+    lufs: -12.0             # More dynamic
+    spectral_centroid_hz: 2000  # Warmer
+    
+# Processing chain preferences per style
+processing_chains:
+  
+  rock_punk:
+    eq:
+      high_pass: 40         # Hz, remove sub-bass rumble
+      low_shelf:
+        freq: 100
+        gain: 1.0          # dB boost
+      presence_boost:
+        freq: 3000
+        gain: 2.0          # dB boost for aggression
+      air_boost:
+        freq: 12000  
+        gain: 1.5          # dB boost for sparkle
+        
+    compression:
+      threshold: -12        # dB
+      ratio: 4.0           # Aggressive compression
+      attack: 3            # ms, fast attack
+      release: 100         # ms
+      
+    saturation:
+      amount: 0.3          # Add harmonic distortion
+      type: "tube"         # Warm tube saturation
+      
+    limiting:
+      threshold: -1.0      # dB
+      release: 50          # ms, fast release
+      
+  rnb_ballad:
+    eq:
+      high_pass: 30         # Hz, preserve low end
+      low_shelf:
+        freq: 80
+        gain: 0.5          # Subtle bass enhancement
+      vocal_clarity:
+        freq: 2500
+        gain: 1.0          # Vocal presence
+      air_boost:
+        freq: 10000
+        gain: 0.8          # Gentle air
+        
+    compression:
+      threshold: -18        # dB, gentle compression
+      ratio: 2.5
+      attack: 10           # ms, slower attack
+      release: 200         # ms, musical release
+      
+    saturation:
+      amount: 0.1          # Minimal saturation
+      type: "tape"         # Subtle tape warmth
+      
+    limiting:
+      threshold: -1.5      # dB, more headroom
+      release: 100         # ms
+      
+  country_pop:
+    eq:
+      high_pass: 35         # Hz
+      low_shelf:
+        freq: 90
+        gain: 0.8          # Punchy bass
+      vocal_boost:
+        freq: 2800
+        gain: 1.5          # Vocal clarity
+      sparkle:
+        freq: 8000
+        gain: 1.2          # Instrument definition
+        
+    compression:
+      threshold: -15        # dB
+      ratio: 3.0           # Moderate compression
+      attack: 5            # ms
+      release: 150         # ms
+      
+    saturation:
+      amount: 0.2          # Moderate warmth
+      type: "console"      # Console-style saturation
+      
+    limiting:
+      threshold: -1.0      # dB
+      release: 75          # ms
+
+# Instrument-specific processing per style
+instrument_processing:
+  
+  drums:
+    rock_punk:
+      eq:
+        kick_boost: {freq: 60, gain: 2.0}
+        snare_crack: {freq: 4000, gain: 3.0}
+        overhead_air: {freq: 12000, gain: 2.0}
+      compression:
+        kick: {threshold: -10, ratio: 6.0, attack: 1, release: 50}
+        snare: {threshold: -8, ratio: 4.0, attack: 1, release: 100}
+        
+    rnb_ballad:
+      eq:
+        kick_thump: {freq: 80, gain: 1.0}
+        snare_body: {freq: 200, gain: 0.5}
+        hi_hat_sparkle: {freq: 8000, gain: 1.0}
+      compression:
+        kick: {threshold: -15, ratio: 3.0, attack: 5, release: 100}
+        snare: {threshold: -12, ratio: 2.5, attack: 5, release: 150}
+        
+  bass:
+    rock_punk:
+      eq:
+        sub_cut: {freq: 40, type: "high_pass"}
+        punch: {freq: 100, gain: 1.5}
+        attack: {freq: 1000, gain: 1.0}
+      compression: {threshold: -12, ratio: 4.0, attack: 10, release: 100}
+      
+    rnb_ballad:
+      eq:
+        warmth: {freq: 80, gain: 1.0}
+        definition: {freq: 800, gain: 0.5}
+      compression: {threshold: -18, ratio: 2.5, attack: 20, release: 200}
+      
+  vocals:
+    rock_punk:
+      eq:
+        clarity: {freq: 3000, gain: 2.0}
+        presence: {freq: 5000, gain: 1.5}
+        air: {freq: 12000, gain: 1.0}
+      compression: {threshold: -10, ratio: 3.0, attack: 3, release: 100}
+      de_esser: {freq: 6000, threshold: -15}
+      
+    rnb_ballad:
+      eq:
+        warmth: {freq: 200, gain: 0.5}
+        clarity: {freq: 2500, gain: 1.0}
+        silk: {freq: 10000, gain: 0.8}
+      compression: {threshold: -15, ratio: 2.0, attack: 10, release: 200}
+      
+# Mastering chain settings per style  
+mastering_chains:
+  
+  rock_punk:
+    multiband_compression:
+      low: {threshold: -20, ratio: 3.0, attack: 10, release: 100}
+      mid: {threshold: -15, ratio: 4.0, attack: 5, release: 80}
+      high: {threshold: -12, ratio: 3.0, attack: 1, release: 50}
+    
+    stereo_enhancement:
+      bass_mono: true       # Keep bass centered
+      width: 1.2           # Moderate widening
+      
+    final_eq:
+      tilt: 0.5            # dB/octave, slight high-frequency tilt
+      
+  rnb_ballad:
+    multiband_compression:
+      low: {threshold: -25, ratio: 2.0, attack: 20, release: 200}
+      mid: {threshold: -20, ratio: 2.5, attack: 10, release: 150}
+      high: {threshold: -18, ratio: 2.0, attack: 5, release: 100}
+    
+    stereo_enhancement:
+      bass_mono: true
+      width: 1.4           # Wider for ballad feel
+      
+    final_eq:
+      tilt: 0.2            # Gentle tilt
+      
+  country_pop:
+    multiband_compression:
+      low: {threshold: -22, ratio: 2.5, attack: 15, release: 150}
+      mid: {threshold: -18, ratio: 3.0, attack: 8, release: 120}
+      high: {threshold: -15, ratio: 2.5, attack: 3, release: 80}
+    
+    stereo_enhancement:
+      bass_mono: true
+      width: 1.1           # Subtle widening
+      
+    final_eq:
+      tilt: 0.3            # Balanced tilt
