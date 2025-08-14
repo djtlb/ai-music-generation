@@ -410,6 +410,7 @@ export class TokenizerTester {
     }
     
     return report;
+  }
 }
 
 export default TokenizerTester;
