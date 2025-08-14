@@ -18,10 +18,12 @@ import {
   StyleEmbeddingDemo,
   CriticRewardDemo
 } from "@/components/music";
-import { Music, Wand2, Layout, History, MusicNote, Timer, Waveform, Sliders, ArrowsClockwise, Code, Brain, Sparkles, Award } from "@phosphor-icons/react";
+import { IntegratedCompositionWorkflow } from "@/components/music/IntegratedCompositionWorkflow";
+import { PipelineStatusMonitor } from "@/components/music/PipelineStatusMonitor";
+import { Music, Wand2, Layout, History, Music4, Timer, AudioWaveform, Sliders, RotateCcw, Code, Brain, Sparkles, Award, Workflow } from "lucide-react";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("critic");
+  const [activeTab, setActiveTab] = useState("workflow");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -39,9 +41,17 @@ function App() {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-13 mb-8">
+          <TabsList className="grid w-full grid-cols-15 mb-8">
+            <TabsTrigger value="workflow" className="flex items-center gap-2">
+              <Workflow className="w-4 h-4" />
+              Workflow
+            </TabsTrigger>
+            <TabsTrigger value="status" className="flex items-center gap-2">
+              <Timer className="w-4 h-4" />
+              Status
+            </TabsTrigger>
             <TabsTrigger value="pipeline" className="flex items-center gap-2">
-              <ArrowsClockwise className="w-4 h-4" />
+              <RotateCcw className="w-4 h-4" />
               Pipeline
             </TabsTrigger>
             <TabsTrigger value="critic" className="flex items-center gap-2">
@@ -73,7 +83,7 @@ function App() {
               Arrangement
             </TabsTrigger>
             <TabsTrigger value="melody" className="flex items-center gap-2">
-              <MusicNote className="w-4 h-4" />
+              <Music4 className="w-4 h-4" />
               Melody
             </TabsTrigger>
             <TabsTrigger value="alignment" className="flex items-center gap-2">
@@ -81,7 +91,7 @@ function App() {
               Alignment
             </TabsTrigger>
             <TabsTrigger value="sound" className="flex items-center gap-2">
-              <Waveform className="w-4 h-4" />
+              <AudioWaveform className="w-4 h-4" />
               Sound
             </TabsTrigger>
             <TabsTrigger value="mixing" className="flex items-center gap-2">
@@ -94,11 +104,19 @@ function App() {
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="workflow" className="space-y-6">
+            <IntegratedCompositionWorkflow />
+          </TabsContent>
+
+          <TabsContent value="status" className="space-y-6">
+            <PipelineStatusMonitor />
+          </TabsContent>
+
           <TabsContent value="pipeline" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <ArrowsClockwise className="w-5 h-5 text-accent" />
+                  <RotateCcw className="w-5 h-5 text-accent" />
                   Data Flow Pipeline
                 </CardTitle>
                 <CardDescription>
@@ -221,7 +239,7 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MusicNote className="w-5 h-5 text-accent" />
+                  <Music4 className="w-5 h-5 text-accent" />
                   Melody & Harmony Generator
                 </CardTitle>
                 <CardDescription>
@@ -255,7 +273,7 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Waveform className="w-5 h-5 text-accent" />
+                  <AudioWaveform className="w-5 h-5 text-accent" />
                   Sound Design Engine
                 </CardTitle>
                 <CardDescription>
