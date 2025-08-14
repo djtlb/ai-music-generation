@@ -1,0 +1,173 @@
+# Sampling configuration for Melody & Harmony Transformer
+
+# Generation parameters
+generation:
+  target_length: 256
+  nucleus_p: 0.9
+  use_constraints: true
+  
+  # Section-specific temperatures
+  section_temperatures:
+    intro: 0.8
+    verse: 0.9
+    chorus: 0.7
+    bridge: 0.85
+    outro: 0.8
+
+# Musical constraints
+constraints:
+  use_scale_constraints: true
+  use_chord_constraints: true
+  use_repetition_constraints: true
+  use_style_constraints: true
+  
+  # Penalty values (negative values reduce probability)
+  scale_penalty: -5.0
+  chord_penalty: -3.0
+  repetition_penalty: -2.0
+  style_penalty: -2.0
+  
+  # Repetition control
+  repetition_window_size: 8
+  max_repetitions: 2
+  phrase_window_size: 4
+
+# Style-specific configurations
+styles:
+  rock_punk:
+    # Prefer power chords and pentatonic scales
+    scale_preference: pentatonic
+    chord_types: [maj, min, sus4]
+    rhythmic_density: high
+    note_range: [40, 80]  # MIDI note range
+    
+  rnb_ballad:
+    # Allow extended chords and chromatic notes
+    scale_preference: chromatic
+    chord_types: [maj7, min7, dom7, maj9, min9]
+    rhythmic_density: medium
+    note_range: [36, 84]
+    
+  country_pop:
+    # Prefer major scales and simple triads
+    scale_preference: major
+    chord_types: [maj, min, dom7]
+    rhythmic_density: medium
+    note_range: [38, 82]
+
+# Common chord progressions by style and section
+chord_progressions:
+  rock_punk:
+    verse: [C_maj, F_maj, G_maj, C_maj]
+    chorus: [Am_min, F_maj, C_maj, G_maj]
+    bridge: [F_maj, G_maj, Am_min, F_maj]
+    
+  rnb_ballad:
+    verse: [Am_min7, F_maj7, C_maj7, G_maj7]
+    chorus: [C_maj7, G_maj7, Am_min7, F_maj7]
+    bridge: [Dm_min7, G_maj7, C_maj7, Am_min7]
+    
+  country_pop:
+    verse: [C_maj, G_maj, Am_min, F_maj]
+    chorus: [F_maj, C_maj, G_maj, Am_min]
+    bridge: [Am_min, F_maj, G_maj, C_maj]
+
+# Key preferences by style
+key_preferences:
+  rock_punk:
+    major_keys: [C, G, D, A, E]  # Guitar-friendly keys
+    minor_keys: [Am, Em, Bm, Dm]
+    
+  rnb_ballad:
+    major_keys: [C, F, Bb, Eb, Ab]  # Piano-friendly keys
+    minor_keys: [Am, Dm, Gm, Cm]
+    
+  country_pop:
+    major_keys: [C, G, D, A, F]  # Mix of guitar and piano keys
+    minor_keys: [Am, Em, Dm]
+
+# Instrumentation preferences
+instrumentation:
+  rock_punk:
+    - KICK
+    - SNARE  
+    - BASS_PICK
+    - ACOUSTIC_STRUM
+    - LEAD
+    
+  rnb_ballad:
+    - KICK
+    - SNARE
+    - PIANO
+    - BASS_FINGER
+    - LEAD
+    
+  country_pop:
+    - KICK
+    - SNARE
+    - ACOUSTIC_STRUM
+    - PIANO
+    - BASS_PICK
+    - LEAD
+
+# Velocity and timing preferences
+dynamics:
+  rock_punk:
+    velocity_range: [80, 127]  # Loud and aggressive
+    timing_variation: 0.05     # Tight timing
+    
+  rnb_ballad:
+    velocity_range: [40, 100]  # Dynamic range
+    timing_variation: 0.1      # Relaxed timing
+    
+  country_pop:
+    velocity_range: [60, 110]  # Moderate dynamics
+    timing_variation: 0.08     # Slightly loose timing
+
+# Post-processing options
+post_processing:
+  quantize_timing: true
+  quantize_grid: 16  # 16th note quantization
+  humanize_velocity: true
+  humanize_timing: true
+  
+  # Style-specific post-processing
+  style_effects:
+    rock_punk:
+      groove_swing: 0.0
+      velocity_accent: [1, 3]  # Accent beats 1 and 3
+      
+    rnb_ballad:
+      groove_swing: 0.1
+      velocity_accent: [2, 4]  # Accent beats 2 and 4
+      
+    country_pop:
+      groove_swing: 0.05
+      velocity_accent: [1, 3]
+
+# Output format options
+output:
+  format: midi
+  midi_settings:
+    ticks_per_beat: 480
+    tempo: 120  # Default BPM
+    time_signature: [4, 4]
+    
+  # Additional output formats
+  export_formats:
+    - json  # Token sequence
+    - midi  # MIDI file
+    - audio  # If synthesis available
+
+# Batch generation settings
+batch_generation:
+  num_variations: 5
+  temperature_variation: 0.1  # Random variation in temperature
+  seed_variation: true        # Use different random seeds
+  
+# Quality control
+quality_control:
+  min_unique_notes: 3         # Minimum number of unique notes
+  max_repetition_ratio: 0.6   # Maximum ratio of repeated patterns
+  min_note_duration: 0.125    # Minimum note duration (beats)
+  max_simultaneous_notes: 6   # Maximum polyphony

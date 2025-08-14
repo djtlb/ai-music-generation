@@ -1,0 +1,141 @@
+# Melody & Harmony Model Configuration
+
+model:
+  vocab_size: 2000  # Will be set from tokenizer
+  d_model: 512
+  nhead: 8
+  num_layers: 6
+  dim_feedforward: 2048
+  dropout: 0.1
+  max_seq_len: 1024
+  style_vocab_size: 3  # rock_punk, rnb_ballad, country_pop
+  chord_vocab_size: 60
+
+# Training configuration
+training:
+  batch_size: 16
+  num_epochs: 100
+  learning_rate_schedule: true
+  gradient_clip_norm: 1.0
+  num_workers: 4
+  log_interval: 100
+  save_interval: 5
+
+# Optimizer configuration  
+optimizer:
+  type: adamw
+  learning_rate: 1e-4
+  weight_decay: 0.01
+  betas: [0.9, 0.95]
+  eps: 1e-8
+
+# Learning rate scheduler
+scheduler:
+  type: reduce_on_plateau
+  mode: min
+  factor: 0.5
+  patience: 5
+  min_lr: 1e-6
+
+# Loss function weights
+loss:
+  scale_penalty_weight: 0.1
+  repetition_penalty_weight: 0.05
+  chord_compatibility_weight: 0.2
+
+# Data configuration
+data:
+  train_dir: "./data/processed/train"
+  val_dir: "./data/processed/val"
+  style_mapping:
+    rock_punk: 0
+    rnb_ballad: 1
+    country_pop: 2
+
+# Section-specific temperature settings for generation
+generation:
+  section_temperatures:
+    intro: 0.8
+    verse: 0.9
+    chorus: 0.7
+    bridge: 0.85
+    outro: 0.8
+  nucleus_p: 0.9
+  max_length: 512
+
+# Musical constraints
+constraints:
+  use_scale_constraints: true
+  use_chord_constraints: true
+  use_repetition_constraints: true
+  use_style_constraints: true
+  
+  # Penalty values
+  scale_penalty: -5.0
+  chord_penalty: -3.0
+  repetition_penalty: -2.0
+  style_penalty: -2.0
+  
+  # Repetition control
+  repetition_window_size: 8
+  max_repetitions: 2
+  phrase_window_size: 4
+
+# Style-specific configurations
+styles:
+  rock_punk:
+    preferred_scale: pentatonic
+    chord_complexity: simple
+    rhythmic_emphasis: strong
+    
+  rnb_ballad:
+    preferred_scale: major_minor
+    chord_complexity: extended
+    rhythmic_emphasis: subtle
+    
+  country_pop:
+    preferred_scale: major
+    chord_complexity: triads
+    rhythmic_emphasis: moderate
+
+# Training data augmentation
+augmentation:
+  transpose_range: [-3, 3]  # Semitones
+  tempo_variation: [0.8, 1.2]  # Multiplier
+  style_mixing_prob: 0.1
+  
+# Validation and evaluation
+evaluation:
+  metrics:
+    - perplexity
+    - chord_accuracy
+    - scale_compliance
+    - repetition_score
+  eval_interval: 5
+  
+# Checkpointing
+checkpointing:
+  save_best: true
+  save_last: true
+  save_interval: 5
+  keep_last_n: 3
+
+# Hardware configuration
+hardware:
+  mixed_precision: true
+  compile_model: true
+  device: auto  # auto, cpu, cuda
+  
+# Logging and monitoring
+logging:
+  use_wandb: false
+  use_tensorboard: true
+  log_level: INFO
+  
+  wandb:
+    project: melody_harmony_transformer
+    entity: null
+    tags: [transformer, melody, harmony, music]
+    
+  tensorboard:
+    log_dir: ./outputs/tensorboard
