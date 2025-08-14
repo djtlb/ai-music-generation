@@ -1,0 +1,11 @@
+# Sound Design and Audio Rendering Requirements
+# Core audio processing libraries
+soundfile>=0.12.1
+scipy>=1.9.0
+numpy>=1.21.0
+
+# MIDI processing
+mido>=1.2.10
+
+# Configuration and data handling
+PyYAML>=6.0

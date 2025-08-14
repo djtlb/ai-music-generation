@@ -1,0 +1,274 @@
+# Country Pop Instrument Configuration
+# Warm, organic sound with bright acoustics and tasteful processing
+
+instruments:
+  - name: "Country Kick"
+    inst_role: "KICK"
+    sample_path: "samples/drums/country_pop/kick_country.wav"
+    root_note: 36  # C1
+    tune_cents: 0
+    gain_db: 0.0
+    pan: 0.0
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 60
+        gain: 0.6
+      - velocity_min: 61
+        velocity_max: 100
+        gain: 0.8
+      - velocity_min: 101
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.003
+      decay: 0.08
+      sustain: 0.35
+      release: 0.25
+    effects:
+      - type: "eq"
+        parameters:
+          low_freq: 70
+          low_gain: 2.0
+          mid_freq: 300
+          mid_gain: -1.5
+          high_freq: 6000
+          high_gain: 1.0
+      - type: "compression"
+        parameters:
+          ratio: 2.5
+          attack: 0.008
+          release: 0.1
+          threshold: -16.0
+
+  - name: "Country Snare"
+    inst_role: "SNARE"
+    sample_path: "samples/drums/country_pop/snare_country.wav"
+    root_note: 38  # D1
+    tune_cents: 0
+    gain_db: -0.5
+    pan: 0.0
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 70
+        gain: 0.65
+      - velocity_min: 71
+        velocity_max: 110
+        gain: 0.85
+      - velocity_min: 111
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.002
+      decay: 0.12
+      sustain: 0.25
+      release: 0.3
+    effects:
+      - type: "reverb"
+        parameters:
+          room_size: 0.4
+          decay: 0.6
+          high_cut: 0.8
+          mix: 0.2
+      - type: "eq"
+        parameters:
+          low_freq: 200
+          low_gain: -1.0
+          mid_freq: 2500
+          mid_gain: 2.0
+          high_freq: 10000
+          high_gain: 1.5
+
+  - name: "Country Bass"
+    inst_role: "BASS_PICK"
+    sample_path: "samples/bass/country_pop/bass_country.wav"
+    root_note: 28  # E0
+    tune_cents: 0
+    gain_db: -1.0
+    pan: 0.0
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 80
+        gain: 0.7
+      - velocity_min: 81
+        velocity_max: 120
+        gain: 0.9
+      - velocity_min: 121
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.008
+      decay: 0.12
+      sustain: 0.85
+      release: 0.4
+    effects:
+      - type: "compression"
+        parameters:
+          ratio: 2.8
+          attack: 0.012
+          release: 0.1
+          threshold: -18.0
+      - type: "eq"
+        parameters:
+          low_freq: 80
+          low_gain: 1.0
+          mid_freq: 600
+          mid_gain: 0.5
+          high_freq: 3000
+          high_gain: -0.5
+
+  - name: "Acoustic Guitar Strum"
+    inst_role: "ACOUSTIC_STRUM"
+    sample_path: "samples/guitar/country_pop/acoustic_strum_bright.wav"
+    root_note: 64  # E3
+    tune_cents: 0
+    gain_db: -2.0
+    pan: -0.2  # Slightly left
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 60
+        gain: 0.6
+      - velocity_min: 61
+        velocity_max: 100
+        gain: 0.8
+      - velocity_min: 101
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.005
+      decay: 0.25
+      sustain: 0.6
+      release: 1.0
+    effects:
+      - type: "reverb"
+        parameters:
+          room_size: 0.5
+          decay: 0.9
+          high_cut: 0.85
+          mix: 0.2
+      - type: "eq"
+        parameters:
+          low_freq: 120
+          low_gain: -1.0
+          mid_freq: 3000
+          mid_gain: 2.0
+          high_freq: 8000
+          high_gain: 2.5
+      - type: "compression"
+        parameters:
+          ratio: 2.0
+          attack: 0.015
+          release: 0.08
+          threshold: -20.0
+
+  - name: "Country Piano"
+    inst_role: "PIANO"
+    sample_path: "samples/piano/country_pop/piano_bright_country.wav"
+    root_note: 60  # C3
+    tune_cents: 0
+    gain_db: -3.5
+    pan: 0.25  # Right side
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 50
+        gain: 0.55
+      - velocity_min: 51
+        velocity_max: 90
+        gain: 0.8
+      - velocity_min: 91
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.008
+      decay: 0.35
+      sustain: 0.75
+      release: 1.2
+    effects:
+      - type: "reverb"
+        parameters:
+          room_size: 0.6
+          decay: 1.0
+          high_cut: 0.75
+          mix: 0.25
+      - type: "eq"
+        parameters:
+          low_freq: 150
+          low_gain: 0.0
+          mid_freq: 2000
+          mid_gain: 1.0
+          high_freq: 7000
+          high_gain: 1.5
+      - type: "compression"
+        parameters:
+          ratio: 2.2
+          attack: 0.01
+          release: 0.12
+          threshold: -22.0
+
+  - name: "Lead Guitar Country"
+    inst_role: "LEAD"
+    sample_path: "samples/guitar/country_pop/lead_guitar_country.wav"
+    root_note: 64  # E3
+    tune_cents: 0
+    gain_db: -2.5
+    pan: 0.3  # Right side
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 80
+        gain: 0.75
+      - velocity_min: 81
+        velocity_max: 120
+        gain: 0.9
+      - velocity_min: 121
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.015
+      decay: 0.2
+      sustain: 0.8
+      release: 0.8
+    effects:
+      - type: "reverb"
+        parameters:
+          room_size: 0.5
+          decay: 0.8
+          high_cut: 0.8
+          mix: 0.3
+      - type: "delay"
+        parameters:
+          time: 0.3
+          feedback: 0.25
+          mix: 0.15
+      - type: "eq"
+        parameters:
+          low_freq: 200
+          low_gain: -1.5
+          mid_freq: 2000
+          mid_gain: 1.5
+          high_freq: 6000
+          high_gain: 2.0
+      - type: "compression"
+        parameters:
+          ratio: 2.5
+          attack: 0.01
+          release: 0.08
+          threshold: -18.0
+
+# Style-specific mixing parameters
+mixing:
+  master_eq:
+    low_freq: 80
+    low_gain: 0.5
+    mid_freq: 1500
+    mid_gain: 0.0
+    high_freq: 10000
+    high_gain: 2.0
+  
+  master_compression:
+    ratio: 2.2
+    attack: 0.015
+    release: 0.12
+    threshold: -14.0
+  
+  stereo_width: 1.1  # Slightly wider for open sound
+  
+  lufs_target: -16.0  # Bright and punchy for country pop

@@ -1,0 +1,266 @@
+# R&B Ballad Instrument Configuration
+# Smooth, warm sound with rich harmonics and subtle processing
+
+instruments:
+  - name: "Soft Kick"
+    inst_role: "KICK"
+    sample_path: "samples/drums/rnb_ballad/kick_soft.wav"
+    root_note: 36  # C1
+    tune_cents: 0
+    gain_db: -1.0
+    pan: 0.0
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 50
+        gain: 0.5
+      - velocity_min: 51
+        velocity_max: 90
+        gain: 0.75
+      - velocity_min: 91
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.002
+      decay: 0.1
+      sustain: 0.4
+      release: 0.3
+    effects:
+      - type: "eq"
+        parameters:
+          low_freq: 50
+          low_gain: 2.0
+          mid_freq: 200
+          mid_gain: -1.0
+          high_freq: 5000
+          high_gain: 0.5
+      - type: "compression"
+        parameters:
+          ratio: 2.5
+          attack: 0.01
+          release: 0.08
+          threshold: -18.0
+
+  - name: "Brushed Snare"
+    inst_role: "SNARE"
+    sample_path: "samples/drums/rnb_ballad/snare_brush.wav"
+    root_note: 38  # D1
+    tune_cents: 0
+    gain_db: -2.0
+    pan: 0.0
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 60
+        gain: 0.6
+      - velocity_min: 61
+        velocity_max: 100
+        gain: 0.8
+      - velocity_min: 101
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.005
+      decay: 0.15
+      sustain: 0.3
+      release: 0.4
+    effects:
+      - type: "reverb"
+        parameters:
+          room_size: 0.5
+          decay: 0.8
+          high_cut: 0.6
+          mix: 0.3
+      - type: "eq"
+        parameters:
+          low_freq: 200
+          low_gain: -2.0
+          mid_freq: 3000
+          mid_gain: 1.0
+          high_freq: 8000
+          high_gain: 2.0
+
+  - name: "Fingered Bass"
+    inst_role: "BASS_PICK"
+    sample_path: "samples/bass/rnb_ballad/bass_finger.wav"
+    root_note: 28  # E0
+    tune_cents: 0
+    gain_db: -1.5
+    pan: 0.0
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 70
+        gain: 0.7
+      - velocity_min: 71
+        velocity_max: 110
+        gain: 0.85
+      - velocity_min: 111
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.01
+      decay: 0.15
+      sustain: 0.9
+      release: 0.5
+    effects:
+      - type: "compression"
+        parameters:
+          ratio: 3.0
+          attack: 0.015
+          release: 0.12
+          threshold: -20.0
+      - type: "eq"
+        parameters:
+          low_freq: 60
+          low_gain: 1.5
+          mid_freq: 800
+          mid_gain: 0.5
+          high_freq: 4000
+          high_gain: -1.0
+
+  - name: "Acoustic Guitar Fingerpick"
+    inst_role: "ACOUSTIC_STRUM"
+    sample_path: "samples/guitar/rnb_ballad/acoustic_fingerpick.wav"
+    root_note: 64  # E3
+    tune_cents: 0
+    gain_db: -3.0
+    pan: -0.4  # Left side
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 60
+        gain: 0.6
+      - velocity_min: 61
+        velocity_max: 100
+        gain: 0.8
+      - velocity_min: 101
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.008
+      decay: 0.3
+      sustain: 0.7
+      release: 1.2
+    effects:
+      - type: "reverb"
+        parameters:
+          room_size: 0.6
+          decay: 1.2
+          high_cut: 0.7
+          mix: 0.25
+      - type: "chorus"
+        parameters:
+          rate: 0.3
+          depth: 0.2
+          delay: 0.015
+      - type: "eq"
+        parameters:
+          low_freq: 100
+          low_gain: -1.0
+          mid_freq: 2500
+          mid_gain: 1.0
+          high_freq: 8000
+          high_gain: 1.5
+
+  - name: "Electric Piano"
+    inst_role: "PIANO"
+    sample_path: "samples/piano/rnb_ballad/electric_piano_warm.wav"
+    root_note: 60  # C3
+    tune_cents: 0
+    gain_db: -2.0
+    pan: 0.3  # Right side
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 50
+        gain: 0.5
+      - velocity_min: 51
+        velocity_max: 90
+        gain: 0.75
+      - velocity_min: 91
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.01
+      decay: 0.4
+      sustain: 0.8
+      release: 1.5
+    effects:
+      - type: "chorus"
+        parameters:
+          rate: 0.4
+          depth: 0.3
+          delay: 0.02
+      - type: "reverb"
+        parameters:
+          room_size: 0.7
+          decay: 1.5
+          high_cut: 0.8
+          mix: 0.3
+      - type: "eq"
+        parameters:
+          low_freq: 150
+          low_gain: 0.5
+          mid_freq: 1000
+          mid_gain: 0.0
+          high_freq: 6000
+          high_gain: 1.0
+
+  - name: "Lead Synth Pad"
+    inst_role: "LEAD"
+    sample_path: "samples/synth/rnb_ballad/lead_pad_warm.wav"
+    root_note: 60  # C3
+    tune_cents: 0
+    gain_db: -4.0
+    pan: 0.0  # Center
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 70
+        gain: 0.7
+      - velocity_min: 71
+        velocity_max: 110
+        gain: 0.85
+      - velocity_min: 111
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.05
+      decay: 0.3
+      sustain: 0.9
+      release: 1.0
+    effects:
+      - type: "reverb"
+        parameters:
+          room_size: 0.8
+          decay: 2.0
+          high_cut: 0.6
+          mix: 0.4
+      - type: "chorus"
+        parameters:
+          rate: 0.2
+          depth: 0.4
+          delay: 0.025
+      - type: "eq"
+        parameters:
+          low_freq: 200
+          low_gain: -2.0
+          mid_freq: 1500
+          mid_gain: 0.5
+          high_freq: 8000
+          high_gain: 2.0
+
+# Style-specific mixing parameters
+mixing:
+  master_eq:
+    low_freq: 60
+    low_gain: 0.5
+    mid_freq: 1000
+    mid_gain: 0.0
+    high_freq: 8000
+    high_gain: 1.0
+  
+  master_compression:
+    ratio: 1.8
+    attack: 0.02
+    release: 0.15
+    threshold: -16.0
+  
+  stereo_width: 1.0  # Natural stereo width
+  
+  lufs_target: -18.0  # Smooth and dynamic for ballads

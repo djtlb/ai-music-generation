@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,10 @@ import {
   Download,
   SpeakerHigh,
   Sliders,
-  Lightning
+  Lightning,
+  FileAudio,
+  MusicNotes,
+  Gear
 } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
@@ -27,6 +30,51 @@ interface SoundEffect {
   parameters: Record<string, number>;
   wet: number; // 0-1
   enabled: boolean;
+}
+
+interface SampleConfig {
+  samplePath: string;
+  rootNote: number;
+  tuneCents: number;
+  gainDb: number;
+  pan: number;
+  velocityLayers: VelocityLayer[];
+}
+
+interface VelocityLayer {
+  velocityMin: number;
+  velocityMax: number;
+  gain: number;
+}
+
+interface InstrumentConfig {
+  name: string;
+  instRole: string;
+  sampleConfig: SampleConfig;
+  envelope: EnvelopeConfig;
+  effects: SoundEffect[];
+}
+
+interface StemRenderRequest {
+  midiData: string; // Base64 encoded MIDI
+  style: 'rock_punk' | 'rnb_ballad' | 'country_pop';
+  songId?: string;
+  renderConfig: {
+    sampleRate: number;
+    bitDepth: number;
+    normalize: boolean;
+    lufsTarget: number;
+  };
+}
+
+interface StemRenderResult {
+  stems: Record<string, string>; // instrument role -> file path
+  metadata: {
+    style: string;
+    duration: number;
+    sampleRate: number;
+    totalSize: number;
+  };
 }
 
 interface SynthPatch {
@@ -68,101 +116,68 @@ interface SoundDesign {
   timestamp: number;
 }
 
-const INSTRUMENT_TYPES = [
-  "Lead Synth", "Bass Synth", "Pad", "Pluck", "Brass", "Strings", 
-  "Electric Piano", "Organ", "Guitar", "Drums", "Percussion", "FX"
+const INSTRUMENT_ROLES = [
+  "KICK", "SNARE", "BASS_PICK", "ACOUSTIC_STRUM", "PIANO", "LEAD"
 ];
 
-const EFFECT_TYPES = [
-  "Reverb", "Delay", "Chorus", "Distortion", "Compression", 
-  "EQ", "Phaser", "Flanger", "Filter", "Bitcrush", "Saturation"
+const SUPPORTED_STYLES = [
+  { value: "rock_punk", label: "Rock/Punk", description: "Aggressive, raw sound with distorted guitars" },
+  { value: "rnb_ballad", label: "R&B Ballad", description: "Smooth, warm sound with rich harmonics" },
+  { value: "country_pop", label: "Country Pop", description: "Warm, organic sound with bright acoustics" }
 ];
 
-const SOUND_STYLES = [
-  "Vintage Analog", "Modern Digital", "Lo-Fi", "Ambient", "Aggressive", 
-  "Warm Tube", "Clean Digital", "Experimental", "Cinematic", "Retro Wave"
-];
+const SAMPLE_RATES = [44100, 48000, 96000];
+const BIT_DEPTHS = [16, 24, 32];
 
 export function SoundDesignEngine() {
-  const [style, setStyle] = useState("");
-  const [compositionJSON, setCompositionJSON] = useState("");
-  const [generatedPatches, setGeneratedPatches] = useState<SynthPatch[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [soundDesigns, setSoundDesigns] = useKV<SoundDesign[]>("sound-designs", []);
+  const [style, setStyle] = useState<'rock_punk' | 'rnb_ballad' | 'country_pop' | "">("");
+  const [midiFile, setMidiFile] = useState<File | null>(null);
+  const [renderConfig, setRenderConfig] = useState({
+    sampleRate: 48000,
+    bitDepth: 24,
+    normalize: true,
+    lufsTarget: -18.0
+  });
+  const [isRendering, setIsRendering] = useState(false);
+  const [renderResult, setRenderResult] = useState<StemRenderResult | null>(null);
+  const [instrumentConfigs, setInstrumentConfigs] = useState<InstrumentConfig[]>([]);
   const [savedCompositions, setSavedCompositions] = useKV<any[]>("melody-harmony-compositions", []);
   const [selectedComposition, setSelectedComposition] = useState("");
+  const [soundDesigns, setSoundDesigns] = useKV<any[]>("sound-designs", []);
 
-  const generateSoundDesign = async () => {
-    if (!style) {
-      toast.error("Please select a sound style");
-      return;
-    }
+  const loadInstrumentConfig = async (selectedStyle: string) => {
+    if (!selectedStyle) return;
 
-    let compositionData = null;
-
-    // Parse composition if provided
-    if (compositionJSON.trim()) {
-      try {
-        compositionData = JSON.parse(compositionJSON);
-      } catch (e) {
-        toast.error("Invalid composition JSON format");
-        return;
-      }
-    } else if (selectedComposition) {
-      const selected = savedCompositions.find(comp => comp.id === selectedComposition);
-      if (selected) {
-        compositionData = selected;
-      }
-    }
-
-    setIsGenerating(true);
     try {
-      const prompt = spark.llmPrompt`Generate synthesizer patches and sound design for a ${style} style composition.
-
-${compositionData ? `Base this on the following composition:
-${JSON.stringify(compositionData, null, 2)}
-
-Create patches that match the instruments specified in the composition tracks.` : 'Create a complete set of patches for a typical band arrangement.'}
+      const prompt = spark.llmPrompt`Generate instrument configuration for ${selectedStyle} style with the following structure:
 
 Return a JSON object with this exact format:
 {
-  "patches": [
+  "instruments": [
     {
-      "id": "patch_1",
-      "name": "Lead Synth",
-      "instrument": "Lead Synth",
-      "oscillators": [
-        {
-          "type": "sawtooth",
-          "volume": 0.8,
-          "detune": 0
-        },
-        {
-          "type": "square", 
-          "volume": 0.3,
-          "detune": -7
-        }
-      ],
-      "filter": {
-        "type": "lowpass",
-        "frequency": 2400,
-        "resonance": 0.3
+      "name": "Instrument Name",
+      "instRole": "KICK|SNARE|BASS_PICK|ACOUSTIC_STRUM|PIANO|LEAD",
+      "sampleConfig": {
+        "samplePath": "samples/path/to/instrument.wav",
+        "rootNote": 60,
+        "tuneCents": 0,
+        "gainDb": 0.0,
+        "pan": 0.0,
+        "velocityLayers": [
+          {"velocityMin": 0, "velocityMax": 80, "gain": 0.8},
+          {"velocityMin": 81, "velocityMax": 127, "gain": 1.0}
+        ]
       },
       "envelope": {
-        "attack": 0.1,
-        "decay": 0.2,
-        "sustain": 0.7,
-        "release": 0.5
+        "attack": 0.01,
+        "decay": 0.1,
+        "sustain": 0.8,
+        "release": 0.3
       },
       "effects": [
         {
-          "type": "Reverb",
-          "parameters": {
-            "roomSize": 0.4,
-            "decay": 0.6,
-            "highCut": 0.8
-          },
+          "type": "reverb",
+          "parameters": {"roomSize": 0.5, "decay": 0.8, "mix": 0.3},
           "wet": 0.3,
           "enabled": true
         }
@@ -171,141 +186,194 @@ Return a JSON object with this exact format:
   ]
 }
 
-Requirements:
-- Generate patches for all instruments needed (Lead, Bass, Pads, Drums, etc.)
-- Use parameters appropriate for ${style} sound aesthetic
-- Include realistic synthesizer parameters (frequencies 20-20000Hz, envelopes 0.01-5.0s)
-- Add effects that enhance the ${style} character
-- Ensure patches work well together in a mix
-- Use appropriate oscillator combinations for each instrument type
-- Consider the musical key and style from the composition data`;
+Generate configurations for all 6 instrument roles that match the ${selectedStyle} aesthetic.
+Style characteristics:
+- rock_punk: Aggressive, distorted, punchy drums, overdriven guitars
+- rnb_ballad: Smooth, warm, rich harmonics, subtle effects
+- country_pop: Bright, organic, warm acoustics, tasteful processing`;
 
       const result = await spark.llm(prompt, "gpt-4o", true);
-      const soundDesign = JSON.parse(result);
+      const config = JSON.parse(result);
       
-      // Validate the response structure
-      if (!soundDesign.patches || !Array.isArray(soundDesign.patches)) {
-        throw new Error("Invalid response structure: missing patches array");
+      if (config.instruments && Array.isArray(config.instruments)) {
+        setInstrumentConfigs(config.instruments);
+        toast.success(`Loaded ${config.instruments.length} instrument configurations for ${selectedStyle}`);
       }
-      
-      setGeneratedPatches(soundDesign.patches);
-      toast.success("Sound design patches generated!");
     } catch (error) {
-      console.error("Generation error:", error);
-      toast.error("Failed to generate sound design. Please try again.");
-    } finally {
-      setIsGenerating(false);
+      console.error("Failed to load instrument config:", error);
+      toast.error("Failed to load instrument configuration");
     }
   };
 
-  const playSoundDesign = () => {
-    if (generatedPatches.length === 0) {
-      toast.error("No sound design to preview");
+  const renderStems = async () => {
+    if (!style) {
+      toast.error("Please select a music style");
       return;
     }
 
-    setIsPlaying(true);
-    
-    // Simulate sound playback - in a real implementation, this would use Web Audio API
-    // to synthesize the actual sounds based on the patch parameters
-    setTimeout(() => {
-      setIsPlaying(false);
-      toast.success("Sound design preview completed!");
-    }, 8000);
-  };
+    let midiData = null;
 
-  const saveSoundDesign = () => {
-    if (generatedPatches.length === 0) {
-      toast.error("No sound design to save");
-      return;
-    }
-
-    let compositionData = null;
-    
-    if (selectedComposition) {
-      compositionData = savedCompositions.find(comp => comp.id === selectedComposition);
-    } else if (compositionJSON.trim()) {
+    // Get MIDI data from file or composition
+    if (midiFile) {
       try {
-        compositionData = JSON.parse(compositionJSON);
-      } catch (e) {
-        toast.error("Invalid composition JSON format");
+        const arrayBuffer = await midiFile.arrayBuffer();
+        midiData = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      } catch (error) {
+        toast.error("Failed to read MIDI file");
         return;
       }
-    }
-
-    const newSoundDesign: SoundDesign = {
-      id: Date.now().toString(),
-      name: `${style} Sound Design`,
-      style,
-      patches: generatedPatches,
-      composition: compositionData,
-      timestamp: Date.now()
-    };
-
-    setSoundDesigns(current => [newSoundDesign, ...current]);
-    toast.success("Sound design saved to history!");
-  };
-
-  const exportPatches = () => {
-    if (generatedPatches.length === 0) {
-      toast.error("No patches to export");
+    } else if (selectedComposition) {
+      const composition = savedCompositions.find(comp => comp.id === selectedComposition);
+      if (composition && composition.midiData) {
+        midiData = composition.midiData;
+      } else {
+        toast.error("Selected composition has no MIDI data");
+        return;
+      }
+    } else {
+      toast.error("Please provide a MIDI file or select a saved composition");
       return;
     }
 
-    const patchData = {
-      name: `${style} Sound Design`,
-      style,
-      patches: generatedPatches.map(patch => ({
-        ...patch,
-        metadata: {
-          generatedAt: new Date().toISOString(),
-          style,
-          version: "1.0"
-        }
-      }))
-    };
+    setIsRendering(true);
+    try {
+      // Simulate stem rendering process
+      const prompt = spark.llmPrompt`Simulate rendering MIDI to audio stems using a sampler-based engine.
 
-    const dataStr = JSON.stringify(patchData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `sound-design-${style.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    toast.success("Sound design patches exported!");
+Input:
+- Style: ${style}
+- MIDI data: ${midiData.substring(0, 100)}... (truncated)
+- Sample rate: ${renderConfig.sampleRate}Hz
+- Bit depth: ${renderConfig.bitDepth}-bit
+- Normalize: ${renderConfig.normalize}
+- Target LUFS: ${renderConfig.lufsTarget}
+
+Generate a realistic render result with this format:
+{
+  "stems": {
+    "kick": "/stems/song_${Date.now()}/kick.wav",
+    "snare": "/stems/song_${Date.now()}/snare.wav", 
+    "bass_pick": "/stems/song_${Date.now()}/bass_pick.wav",
+    "acoustic_strum": "/stems/song_${Date.now()}/acoustic_strum.wav",
+    "piano": "/stems/song_${Date.now()}/piano.wav",
+    "lead": "/stems/song_${Date.now()}/lead.wav"
+  },
+  "metadata": {
+    "style": "${style}",
+    "duration": 240.5,
+    "sampleRate": ${renderConfig.sampleRate},
+    "totalSize": 125.8
+  }
+}
+
+Include realistic file paths and metadata for a ${style} style composition.`;
+
+      const result = await spark.llm(prompt, "gpt-4o", true);
+      const renderResult = JSON.parse(result);
+      
+      setRenderResult(renderResult);
+      
+      // Save render to history
+      const renderHistory = {
+        id: Date.now().toString(),
+        style,
+        midiFile: midiFile?.name || selectedComposition,
+        renderConfig,
+        result: renderResult,
+        timestamp: Date.now()
+      };
+      
+      setSoundDesigns(current => [renderHistory, ...current]);
+      toast.success("Stems rendered successfully!");
+      
+    } catch (error) {
+      console.error("Render error:", error);
+      toast.error("Failed to render stems. Please try again.");
+    } finally {
+      setIsRendering(false);
+    }
+  };
+
+  const handleStyleChange = (newStyle: string) => {
+    setStyle(newStyle as any);
+    loadInstrumentConfig(newStyle);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.name.toLowerCase().endsWith('.mid') && !file.name.toLowerCase().endsWith('.midi')) {
+        toast.error("Please select a MIDI file (.mid or .midi)");
+        return;
+      }
+      setMidiFile(file);
+      setSelectedComposition(""); // Clear composition selection
+      toast.success(`MIDI file loaded: ${file.name}`);
+    }
   };
 
   const loadComposition = (compositionId: string) => {
     const composition = savedCompositions.find(comp => comp.id === compositionId);
     if (composition) {
       setSelectedComposition(compositionId);
-      setCompositionJSON(""); // Clear manual JSON when using saved composition
+      setMidiFile(null); // Clear file when using saved composition
     }
   };
 
-  const formatEffect = (effect: SoundEffect) => {
-    const paramStr = Object.entries(effect.parameters)
-      .map(([key, value]) => `${key}: ${typeof value === 'number' ? value.toFixed(2) : value}`)
-      .join(', ');
-    return `${effect.type} (${paramStr}, ${Math.round(effect.wet * 100)}% wet)`;
+  const downloadStem = (instrumentRole: string, filePath: string) => {
+    // Simulate download - in real implementation this would download the actual audio file
+    toast.success(`Downloading ${instrumentRole} stem...`);
+    
+    // Create a dummy download link for demonstration
+    const link = document.createElement('a');
+    link.href = '#';
+    link.download = `${instrumentRole}_${style}.wav`;
+    link.click();
+  };
+
+  const exportRenderMetadata = () => {
+    if (!renderResult) {
+      toast.error("No render result to export");
+      return;
+    }
+
+    const metadata = {
+      style,
+      renderConfig,
+      result: renderResult,
+      timestamp: Date.now(),
+      instrumentConfigs
+    };
+
+    const dataStr = JSON.stringify(metadata, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `stem-render-${style}-${Date.now()}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    toast.success("Render metadata exported!");
   };
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="sound-style">Sound Style</Label>
-          <Select value={style} onValueChange={setStyle}>
-            <SelectTrigger id="sound-style">
-              <SelectValue placeholder="Select sound style" />
+          <Label htmlFor="music-style">Music Style</Label>
+          <Select value={style} onValueChange={handleStyleChange}>
+            <SelectTrigger id="music-style">
+              <SelectValue placeholder="Select music style" />
             </SelectTrigger>
             <SelectContent>
-              {SOUND_STYLES.map((s) => (
-                <SelectItem key={s} value={s.toLowerCase()}>
-                  {s}
+              {SUPPORTED_STYLES.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  <div>
+                    <div className="font-medium">{s.label}</div>
+                    <div className="text-xs text-muted-foreground">{s.description}</div>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -313,25 +381,45 @@ Requirements:
         </div>
 
         <div className="space-y-2">
-          <Label>Data Flow Input</Label>
+          <Label>Sampler-Based Rendering</Label>
           <div className="text-sm text-muted-foreground">
-            Use composition data to generate matching sound design
+            Convert MIDI to audio stems using style-specific sample libraries
           </div>
         </div>
       </div>
 
-      {/* Composition Input Section */}
+      {/* MIDI Input Section */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Composition Input (Optional)</h3>
-            <p className="text-sm text-muted-foreground">
-              Load a saved composition or provide custom MIDI data to generate sound patches that match the instruments and style.
-            </p>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MusicNotes className="w-5 h-5 text-accent" />
+            MIDI Input
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* File Upload */}
+            <div className="space-y-2">
+              <Label htmlFor="midi-file">Upload MIDI File</Label>
+              <Input
+                id="midi-file"
+                type="file"
+                accept=".mid,.midi"
+                onChange={handleFileUpload}
+                className="file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-accent/10 file:text-accent hover:file:bg-accent/20"
+              />
+              {midiFile && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <FileAudio className="w-4 h-4" />
+                  {midiFile.name}
+                </div>
+              )}
+            </div>
 
+            {/* Saved Compositions */}
             {savedCompositions.length > 0 && (
               <div className="space-y-2">
-                <Label htmlFor="saved-composition">Use Saved Composition</Label>
+                <Label htmlFor="saved-composition">Or Use Saved Composition</Label>
                 <Select value={selectedComposition} onValueChange={loadComposition}>
                   <SelectTrigger id="saved-composition">
                     <SelectValue placeholder="Select saved composition" />
@@ -346,210 +434,236 @@ Requirements:
                 </Select>
               </div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Render Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Gear className="w-5 h-5 text-accent" />
+            Render Configuration
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label>Sample Rate</Label>
+              <Select 
+                value={renderConfig.sampleRate.toString()} 
+                onValueChange={(value) => setRenderConfig(prev => ({...prev, sampleRate: parseInt(value)}))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SAMPLE_RATES.map(rate => (
+                    <SelectItem key={rate} value={rate.toString()}>
+                      {rate} Hz
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="space-y-2">
-              <Label htmlFor="composition-json">Or Paste Composition JSON</Label>
-              <Textarea
-                id="composition-json"
-                placeholder="Paste exported composition JSON here..."
-                value={compositionJSON}
-                onChange={(e) => {
-                  setCompositionJSON(e.target.value);
-                  if (e.target.value.trim()) {
-                    setSelectedComposition(""); // Clear saved selection when using manual JSON
-                  }
-                }}
-                className="font-mono text-sm"
-                rows={4}
+              <Label>Bit Depth</Label>
+              <Select 
+                value={renderConfig.bitDepth.toString()} 
+                onValueChange={(value) => setRenderConfig(prev => ({...prev, bitDepth: parseInt(value)}))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BIT_DEPTHS.map(depth => (
+                    <SelectItem key={depth} value={depth.toString()}>
+                      {depth}-bit
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Normalize</Label>
+              <Button
+                variant={renderConfig.normalize ? "default" : "outline"}
+                onClick={() => setRenderConfig(prev => ({...prev, normalize: !prev.normalize}))}
+                className="w-full"
+              >
+                {renderConfig.normalize ? "Enabled" : "Disabled"}
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Target LUFS</Label>
+              <Input
+                type="number"
+                value={renderConfig.lufsTarget}
+                onChange={(e) => setRenderConfig(prev => ({...prev, lufsTarget: parseFloat(e.target.value)}))}
+                step="0.1"
+                min="-30"
+                max="0"
+                disabled={!renderConfig.normalize}
               />
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* Action Buttons */}
       <div className="flex gap-3 flex-wrap">
         <Button 
-          onClick={generateSoundDesign} 
-          disabled={isGenerating || !style}
+          onClick={renderStems} 
+          disabled={isRendering || !style || (!midiFile && !selectedComposition)}
           className="flex items-center gap-2"
         >
-          {isGenerating ? (
+          {isRendering ? (
             <>
               <Sparkles className="w-4 h-4 animate-spin" />
-              Generating...
+              Rendering...
             </>
           ) : (
             <>
               <Waveform className="w-4 h-4" />
-              Generate Sound Design
+              Render to Stems
             </>
           )}
         </Button>
 
-        {generatedPatches.length > 0 && (
-          <>
-            <Button 
-              variant="secondary" 
-              onClick={playSoundDesign}
-              disabled={isPlaying}
-              className="flex items-center gap-2"
-            >
-              {isPlaying ? (
-                <>
-                  <Pause className="w-4 h-4" />
-                  Playing...
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  Preview Sounds
-                </>
-              )}
-            </Button>
-
-            <Button variant="outline" onClick={saveSoundDesign} className="flex items-center gap-2">
-              <Save className="w-4 h-4" />
-              Save
-            </Button>
-
-            <Button variant="outline" onClick={exportPatches} className="flex items-center gap-2">
-              <Download className="w-4 h-4" />
-              Export Patches
-            </Button>
-          </>
+        {renderResult && (
+          <Button variant="outline" onClick={exportRenderMetadata} className="flex items-center gap-2">
+            <Download className="w-4 h-4" />
+            Export Metadata
+          </Button>
         )}
       </div>
 
-      {generatedPatches.length > 0 && (
+      {/* Instrument Configuration Display */}
+      {instrumentConfigs.length > 0 && (
         <>
           <Separator />
           <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <h3 className="text-lg font-semibold">Generated Sound Design</h3>
-                  <div className="flex gap-2 flex-wrap">
-                    <Badge variant="secondary">{style}</Badge>
-                    <Badge variant="outline">{generatedPatches.length} Patches</Badge>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-accent" />
+                Instrument Configuration - {SUPPORTED_STYLES.find(s => s.value === style)?.label}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {instrumentConfigs.map((config, index) => (
+                  <div key={index} className="p-4 bg-card border rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <SpeakerHigh className="w-4 h-4 text-accent" />
+                      <div>
+                        <h4 className="font-medium">{config.name}</h4>
+                        <p className="text-sm text-muted-foreground">{config.instRole}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Root Note:</span>
+                        <span>{config.sampleConfig.rootNote}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Gain:</span>
+                        <span>{config.sampleConfig.gainDb} dB</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Pan:</span>
+                        <span>{config.sampleConfig.pan > 0 ? 'R' : config.sampleConfig.pan < 0 ? 'L' : 'C'}</span>
+                      </div>
+                    </div>
+
+                    {config.effects.length > 0 && (
+                      <div className="mt-3 pt-3 border-t">
+                        <h5 className="text-xs font-medium mb-1">Effects</h5>
+                        <div className="flex flex-wrap gap-1">
+                          {config.effects.map((effect, effectIndex) => (
+                            <Badge key={effectIndex} variant="outline" className="text-xs">
+                              {effect.type}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* Render Results */}
+      {renderResult && (
+        <>
+          <Separator />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileAudio className="w-5 h-5 text-accent" />
+                Rendered Stems
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Style:</span>
+                    <div className="font-medium">{renderResult.metadata.style}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Duration:</span>
+                    <div className="font-medium">{renderResult.metadata.duration.toFixed(1)}s</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Sample Rate:</span>
+                    <div className="font-medium">{renderResult.metadata.sampleRate} Hz</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Total Size:</span>
+                    <div className="font-medium">{renderResult.metadata.totalSize.toFixed(1)} MB</div>
                   </div>
                 </div>
 
-                {/* Patch Overview */}
-                <div className="space-y-4">
-                  {generatedPatches.map((patch, index) => (
-                    <div
-                      key={index}
-                      className="p-4 bg-card border rounded-lg hover:bg-accent/5 transition-colors"
-                    >
-                      <div className="flex items-start justify-between mb-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium">Audio Stems:</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {Object.entries(renderResult.stems).map(([role, filePath]) => (
+                      <div key={role} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-accent/10 rounded-lg">
-                            <SpeakerHigh className="w-5 h-5 text-accent" />
-                          </div>
+                          <SpeakerHigh className="w-4 h-4 text-accent" />
                           <div>
-                            <h4 className="font-medium">{patch.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {patch.instrument}
-                            </p>
+                            <div className="font-medium">{role.toUpperCase()}</div>
+                            <div className="text-xs text-muted-foreground">{filePath.split('/').pop()}</div>
                           </div>
                         </div>
-                        <Badge variant="outline" className="text-xs">
-                          {patch.oscillators.length} OSC
-                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadStem(role, filePath)}
+                          className="flex items-center gap-1"
+                        >
+                          <Download className="w-3 h-3" />
+                          Download
+                        </Button>
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                        {/* Oscillators */}
-                        <div>
-                          <h5 className="font-medium mb-2 flex items-center gap-2">
-                            <Lightning className="w-4 h-4" />
-                            Oscillators
-                          </h5>
-                          <div className="space-y-1 text-sm">
-                            {patch.oscillators.map((osc, oscIndex) => (
-                              <div key={oscIndex} className="flex justify-between">
-                                <span className="text-muted-foreground">{osc.type}</span>
-                                <span>Vol: {Math.round(osc.volume * 100)}% Det: {osc.detune}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Filter */}
-                        <div>
-                          <h5 className="font-medium mb-2 flex items-center gap-2">
-                            <Sliders className="w-4 h-4" />
-                            Filter
-                          </h5>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Type:</span>
-                              <span>{patch.filter.type}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Freq:</span>
-                              <span>{patch.filter.frequency}Hz</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Res:</span>
-                              <span>{patch.filter.resonance.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Envelope */}
-                        <div>
-                          <h5 className="font-medium mb-2">ADSR</h5>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">A:</span>
-                              <span>{patch.envelope.attack}s</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">D:</span>
-                              <span>{patch.envelope.decay}s</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">S:</span>
-                              <span>{patch.envelope.sustain.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">R:</span>
-                              <span>{patch.envelope.release}s</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Effects */}
-                      {patch.effects.length > 0 && (
-                        <div className="pt-3 border-t">
-                          <h5 className="font-medium mb-2">Effects Chain</h5>
-                          <div className="flex flex-wrap gap-1">
-                            {patch.effects.map((effect, effectIndex) => (
-                              <Badge 
-                                key={effectIndex} 
-                                variant={effect.enabled ? "default" : "secondary"}
-                                className="text-xs"
-                                title={formatEffect(effect)}
-                              >
-                                {effect.type} {Math.round(effect.wet * 100)}%
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
 
                 <div className="p-4 bg-muted/50 rounded-lg">
-                  <h4 className="font-medium mb-2">Sound Design Notes:</h4>
+                  <h4 className="font-medium mb-2">Rendering Notes:</h4>
                   <div className="text-sm text-muted-foreground space-y-1">
-                    <p>• Each patch contains oscillator settings, filter parameters, and envelope shaping</p>
-                    <p>• Effects are configured to enhance the {style} aesthetic</p>
-                    <p>• Patches are designed to work together in a cohesive mix</p>
-                    <p>• Export to use with synthesizers, samplers, or digital audio workstations</p>
+                    <p>• Stems rendered using style-specific sample libraries and velocity layers</p>
+                    <p>• Each instrument mapped to appropriate samples with realistic envelope shaping</p>
+                    <p>• Applied {renderConfig.normalize ? 'LUFS normalization' : 'no normalization'} and latency compensation</p>
+                    <p>• Ready for mixing, mastering, or further processing in your DAW</p>
                   </div>
                 </div>
               </div>

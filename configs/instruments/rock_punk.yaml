@@ -1,0 +1,234 @@
+# Rock/Punk Instrument Configuration
+# Aggressive, raw sound with distorted guitars and punchy drums
+
+instruments:
+  - name: "Punk Kick"
+    inst_role: "KICK"
+    sample_path: "samples/drums/rock_punk/kick_punk.wav"
+    root_note: 36  # C1
+    tune_cents: 0
+    gain_db: 2.0
+    pan: 0.0
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 60
+        gain: 0.6
+      - velocity_min: 61
+        velocity_max: 100
+        gain: 0.85
+      - velocity_min: 101
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.001
+      decay: 0.05
+      sustain: 0.3
+      release: 0.15
+    effects:
+      - type: "compression"
+        parameters:
+          ratio: 4.0
+          attack: 0.003
+          release: 0.05
+          threshold: -12.0
+      - type: "eq"
+        parameters:
+          low_freq: 60
+          low_gain: 3.0
+          mid_freq: 2500
+          mid_gain: -2.0
+          high_freq: 8000
+          high_gain: 1.0
+
+  - name: "Punk Snare"
+    inst_role: "SNARE"
+    sample_path: "samples/drums/rock_punk/snare_punk.wav"
+    root_note: 38  # D1
+    tune_cents: 0
+    gain_db: 1.5
+    pan: 0.0
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 70
+        gain: 0.7
+      - velocity_min: 71
+        velocity_max: 110
+        gain: 0.9
+      - velocity_min: 111
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.001
+      decay: 0.08
+      sustain: 0.2
+      release: 0.2
+    effects:
+      - type: "compression"
+        parameters:
+          ratio: 3.0
+          attack: 0.005
+          release: 0.08
+          threshold: -15.0
+      - type: "gate"
+        parameters:
+          threshold: -35.0
+          ratio: 10.0
+          attack: 0.001
+          release: 0.1
+
+  - name: "Distorted Bass"
+    inst_role: "BASS_PICK"
+    sample_path: "samples/bass/rock_punk/bass_pick_distorted.wav"
+    root_note: 28  # E0
+    tune_cents: 0
+    gain_db: 0.0
+    pan: 0.0
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 80
+        gain: 0.8
+      - velocity_min: 81
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.005
+      decay: 0.1
+      sustain: 0.8
+      release: 0.3
+    effects:
+      - type: "distortion"
+        parameters:
+          drive: 0.6
+          tone: 0.7
+          level: 0.8
+      - type: "compression"
+        parameters:
+          ratio: 3.5
+          attack: 0.01
+          release: 0.1
+          threshold: -18.0
+
+  - name: "Power Chord Guitar"
+    inst_role: "ACOUSTIC_STRUM"
+    sample_path: "samples/guitar/rock_punk/power_chord_e.wav"
+    root_note: 64  # E3
+    tune_cents: 0
+    gain_db: -1.0
+    pan: -0.3  # Slightly left
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 70
+        gain: 0.7
+      - velocity_min: 71
+        velocity_max: 110
+        gain: 0.9
+      - velocity_min: 111
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.01
+      decay: 0.2
+      sustain: 0.6
+      release: 0.8
+    effects:
+      - type: "overdrive"
+        parameters:
+          gain: 0.8
+          tone: 0.6
+          level: 0.9
+      - type: "chorus"
+        parameters:
+          rate: 0.5
+          depth: 0.3
+          delay: 0.02
+
+  - name: "Rock Piano"
+    inst_role: "PIANO"
+    sample_path: "samples/piano/rock_punk/piano_bright.wav"
+    root_note: 60  # C3
+    tune_cents: 0
+    gain_db: -3.0
+    pan: 0.2  # Slightly right
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 60
+        gain: 0.6
+      - velocity_min: 61
+        velocity_max: 100
+        gain: 0.8
+      - velocity_min: 101
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.005
+      decay: 0.3
+      sustain: 0.7
+      release: 1.0
+    effects:
+      - type: "compression"
+        parameters:
+          ratio: 2.5
+          attack: 0.01
+          release: 0.15
+          threshold: -20.0
+      - type: "reverb"
+        parameters:
+          room_size: 0.3
+          decay: 0.4
+          high_cut: 0.8
+
+  - name: "Lead Guitar"
+    inst_role: "LEAD"
+    sample_path: "samples/guitar/rock_punk/lead_guitar.wav"
+    root_note: 64  # E3
+    tune_cents: 0
+    gain_db: -2.0
+    pan: 0.4  # Right side
+    velocity_layers:
+      - velocity_min: 0
+        velocity_max: 80
+        gain: 0.8
+      - velocity_min: 81
+        velocity_max: 127
+        gain: 1.0
+    envelope:
+      attack: 0.02
+      decay: 0.15
+      sustain: 0.8
+      release: 0.6
+    effects:
+      - type: "distortion"
+        parameters:
+          drive: 0.7
+          tone: 0.8
+          level: 0.9
+      - type: "delay"
+        parameters:
+          time: 0.25
+          feedback: 0.3
+          mix: 0.2
+      - type: "reverb"
+        parameters:
+          room_size: 0.4
+          decay: 0.6
+          high_cut: 0.7
+
+# Style-specific mixing parameters
+mixing:
+  master_eq:
+    low_freq: 80
+    low_gain: 1.0
+    mid_freq: 1500
+    mid_gain: 0.0
+    high_freq: 10000
+    high_gain: 2.0
+  
+  master_compression:
+    ratio: 2.0
+    attack: 0.01
+    release: 0.1
+    threshold: -12.0
+  
+  stereo_width: 1.2  # Slightly wider than natural
+  
+  lufs_target: -14.0  # Loud and punchy for rock/punk
