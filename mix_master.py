@@ -309,7 +309,12 @@ Examples:
         if args.targets:
             logger.info(f"Loading custom targets from {args.targets}")
             with open(args.targets, 'r') as f:
-                style_targets = yaml.safe_load(f)
+                custom_targets = yaml.safe_load(f)
+                # Extract style_targets section if it exists
+                if 'style_targets' in custom_targets:
+                    style_targets = custom_targets['style_targets']
+                else:
+                    style_targets = custom_targets
         else:
             style_targets = load_style_targets()
             

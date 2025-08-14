@@ -203,6 +203,8 @@ def run_validation_suite(styles: List[str] = None,
         
     # Load targets
     targets = load_style_targets()
+    if 'style_targets' in targets:
+        targets = targets['style_targets']
     
     # Create test suite
     test_suite = create_test_suite()

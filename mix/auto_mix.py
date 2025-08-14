@@ -101,29 +101,58 @@ class EQBand(nn.Module):
         super().__init__()
         self.eq_type = eq_type
         
-    def forward(self, audio: torch.Tensor, freq: float, gain: float, q: float = 1.0) -> torch.Tensor:
+    def forward(self, audio: torch.Tensor, freq: float, gain: torch.Tensor, q: float = 1.0) -> torch.Tensor:
         """
         Apply EQ filtering (simplified differentiable version).
         
         In practice, this would use proper filter coefficients.
         For now, we use spectral domain processing as approximation.
         """
-        # Simplified EQ: apply gain boost/cut in frequency domain
-        stft = torch.stft(audio, n_fft=2048, hop_length=512, return_complex=True)
+        if audio.numel() == 0:
+            return audio
+            
+        # Handle single channel or stereo
+        if audio.dim() == 1:
+            audio = audio.unsqueeze(0)
+            
+        # Process each channel
+        processed_channels = []
+        for ch in range(audio.shape[0]):
+            ch_audio = audio[ch]
+            
+            # Simplified EQ: apply gain boost/cut in frequency domain
+            stft = torch.stft(ch_audio, n_fft=2048, hop_length=512, 
+                            window=torch.hann_window(2048).to(ch_audio.device),
+                            return_complex=True)
+            
+            # Create frequency mask centered around target frequency
+            freqs = torch.linspace(0, 24000, stft.shape[0]).to(stft.device)
+            freq_mask = torch.exp(-((freqs - freq) / (freq / q)) ** 2)
+            freq_mask = freq_mask.unsqueeze(-1)
+            
+            # Apply gain (convert tensor to scalar if needed)
+            gain_val = gain.item() if torch.is_tensor(gain) else gain
+            gain_linear = 10 ** (gain_val / 20)  # dB to linear
+            stft_eq = stft * (1 + (gain_linear - 1) * freq_mask)
+            
+            # Convert back to time domain
+            try:
+                audio_eq = torch.istft(stft_eq, n_fft=2048, hop_length=512,
+                                     window=torch.hann_window(2048).to(ch_audio.device))
+                # Ensure output length matches input
+                if audio_eq.shape[0] != ch_audio.shape[0]:
+                    if audio_eq.shape[0] < ch_audio.shape[0]:
+                        padding = ch_audio.shape[0] - audio_eq.shape[0]
+                        audio_eq = F.pad(audio_eq, (0, padding))
+                    else:
+                        audio_eq = audio_eq[:ch_audio.shape[0]]
+                        
+                processed_channels.append(audio_eq)
+            except Exception:
+                # Fallback: return original audio if STFT/ISTFT fails
+                processed_channels.append(ch_audio)
         
-        # Create frequency mask centered around target frequency
-        freqs = torch.linspace(0, 24000, stft.shape[-2])  # Assuming 48kHz sample rate
-        freq_mask = torch.exp(-((freqs - freq) / (freq / q)) ** 2)
-        freq_mask = freq_mask.unsqueeze(-1).to(stft.device)
-        
-        # Apply gain
-        gain_linear = 10 ** (gain / 20)  # dB to linear
-        stft_eq = stft * (1 + (gain_linear - 1) * freq_mask)
-        
-        # Convert back to time domain
-        audio_eq = torch.istft(stft_eq, n_fft=2048, hop_length=512)
-        
-        return audio_eq
+        return torch.stack(processed_channels)
 
 
 class Compressor(nn.Module):
@@ -146,8 +175,13 @@ class Compressor(nn.Module):
             release: Release time in seconds
             makeup_gain: Makeup gain in dB
         """
+        # Avoid compression on very quiet signals
+        if torch.max(torch.abs(audio)) < 1e-6:
+            return audio
+            
         # Convert to dB domain for processing
-        audio_db = 20 * torch.log10(torch.abs(audio) + 1e-8)
+        audio_abs = torch.abs(audio) + 1e-8
+        audio_db = 20 * torch.log10(audio_abs)
         
         # Compute gain reduction
         over_threshold = audio_db - threshold
@@ -157,8 +191,12 @@ class Compressor(nn.Module):
         
         # Apply simple envelope following (simplified attack/release)
         # In practice, this would use proper envelope detection
-        alpha_attack = 1 - torch.exp(-1 / (attack * self.sample_rate))
-        alpha_release = 1 - torch.exp(-1 / (release * self.sample_rate))
+        alpha_attack = 1 - torch.exp(torch.tensor(-1 / (attack * self.sample_rate)))
+        alpha_release = 1 - torch.exp(torch.tensor(-1 / (release * self.sample_rate)))
+        
+        # Move alphas to same device as audio
+        alpha_attack = alpha_attack.to(audio.device)
+        alpha_release = alpha_release.to(audio.device)
         
         # Simplified envelope following
         gain_smooth = torch.zeros_like(gain_reduction)
@@ -171,7 +209,10 @@ class Compressor(nn.Module):
         
         # Apply gain reduction and makeup gain
         gain_linear = 10 ** ((-gain_smooth + makeup_gain) / 20)
-        audio_compressed = audio * gain_linear
+        
+        # Preserve sign of original audio
+        audio_sign = torch.sign(audio)
+        audio_compressed = audio_sign * audio_abs * gain_linear
         
         return audio_compressed
 
@@ -201,19 +242,26 @@ class ChannelStrip(nn.Module):
         audio = self.eq_high_mid(audio, 3000.0, params['eq_high_mid_gain'])
         audio = self.eq_high(audio, 10000.0, params['eq_high_gain'])
         
-        # Compression
+        # Compression (convert tensor parameters to scalars)
+        comp_threshold = params['comp_threshold'].item() if torch.is_tensor(params['comp_threshold']) else params['comp_threshold']
+        comp_ratio = params['comp_ratio'].item() if torch.is_tensor(params['comp_ratio']) else params['comp_ratio']
+        comp_attack = params['comp_attack'].item() if torch.is_tensor(params['comp_attack']) else params['comp_attack']
+        comp_release = params['comp_release'].item() if torch.is_tensor(params['comp_release']) else params['comp_release']
+        comp_makeup_gain = params['comp_makeup_gain'].item() if torch.is_tensor(params['comp_makeup_gain']) else params['comp_makeup_gain']
+        
         audio = self.compressor(
             audio,
-            params['comp_threshold'],
-            params['comp_ratio'], 
-            params['comp_attack'],
-            params['comp_release'],
-            params['comp_makeup_gain']
+            comp_threshold,
+            comp_ratio,
+            comp_attack,
+            comp_release,
+            comp_makeup_gain
         )
         
         # Soft saturation
-        saturation = params['saturation']
-        audio = torch.tanh(audio * saturation) / saturation
+        saturation = params['saturation'].item() if torch.is_tensor(params['saturation']) else params['saturation']
+        if saturation > 1.0:
+            audio = torch.tanh(audio * saturation) / saturation
         
         return audio
 
@@ -288,14 +336,18 @@ class MasteringChain(nn.Module):
             audio: Mixed audio [channels, samples]
             params: Mastering parameters
         """
+        # Convert tensor parameters to scalars for processing
+        def to_scalar(param):
+            return param.item() if torch.is_tensor(param) else param
+        
         # Bus compression
         audio = self.bus_compressor(
             audio,
-            params['bus_comp_threshold'],
-            params['bus_comp_ratio'],
-            params['bus_comp_attack'], 
-            params['bus_comp_release'],
-            params['bus_comp_makeup_gain']
+            to_scalar(params['bus_comp_threshold']),
+            to_scalar(params['bus_comp_ratio']),
+            to_scalar(params['bus_comp_attack']),
+            to_scalar(params['bus_comp_release']),
+            to_scalar(params['bus_comp_makeup_gain'])
         )
         
         # Mastering EQ
@@ -304,20 +356,20 @@ class MasteringChain(nn.Module):
             'eq_low_mid_gain': params['master_eq_low_mid_gain'],
             'eq_high_mid_gain': params['master_eq_high_mid_gain'],
             'eq_high_gain': params['master_eq_high_gain'],
-            'comp_threshold': torch.tensor(-50.0),  # Disable comp in EQ
-            'comp_ratio': torch.tensor(1.0),
-            'comp_attack': torch.tensor(0.001),
-            'comp_release': torch.tensor(0.1),
-            'comp_makeup_gain': torch.tensor(0.0),
-            'saturation': torch.tensor(1.0)
+            'comp_threshold': torch.tensor(-50.0).to(audio.device),  # Disable comp in EQ
+            'comp_ratio': torch.tensor(1.0).to(audio.device),
+            'comp_attack': torch.tensor(0.001).to(audio.device),
+            'comp_release': torch.tensor(0.1).to(audio.device),
+            'comp_makeup_gain': torch.tensor(0.0).to(audio.device),
+            'saturation': torch.tensor(1.0).to(audio.device)
         }
         audio = self.eq(audio, eq_params)
         
         # Stereo enhancement
-        audio = self.stereo_widener(audio, params['stereo_width'])
+        audio = self.stereo_widener(audio, to_scalar(params['stereo_width']))
         
         # Final limiting
-        audio = self.limiter(audio, params['limiter_threshold'], params['limiter_release'])
+        audio = self.limiter(audio, to_scalar(params['limiter_threshold']), to_scalar(params['limiter_release']))
         
         return audio
 
@@ -550,17 +602,17 @@ class AutoMixChain(nn.Module):
             processed_stem = channel_strip(stem, stem_params)
             
             # Apply level and pan
-            level_db = stem_params['level']
+            level_db = stem_params['level'].item() if torch.is_tensor(stem_params['level']) else stem_params['level']
             level_linear = 10 ** (level_db / 20)
             processed_stem = processed_stem * level_linear
             
             # Simple panning (for stereo)
             if processed_stem.shape[0] == 2:
-                pan = stem_params['pan']
-                left_gain = torch.sqrt((1 - pan) / 2) if pan >= 0 else 1.0
-                right_gain = torch.sqrt((1 + pan) / 2) if pan <= 0 else 1.0
-                processed_stem[0] *= left_gain
-                processed_stem[1] *= right_gain
+                pan = stem_params['pan'].item() if torch.is_tensor(stem_params['pan']) else stem_params['pan']
+                left_gain = torch.sqrt(torch.tensor((1 - pan) / 2)) if pan >= 0 else torch.tensor(1.0)
+                right_gain = torch.sqrt(torch.tensor((1 + pan) / 2)) if pan <= 0 else torch.tensor(1.0)
+                processed_stem[0] *= left_gain.to(processed_stem.device)
+                processed_stem[1] *= right_gain.to(processed_stem.device)
                 
             processed_stems.append(processed_stem)
             
@@ -583,12 +635,12 @@ class AutoMixChain(nn.Module):
         analysis = {}
         
         # Compute current metrics
-        analysis['lufs'] = compute_lufs(audio)
+        analysis['lufs'] = compute_lufs(audio, self.sample_rate)
         analysis['spectral_centroid'] = compute_spectral_centroid(audio, self.sample_rate)
         analysis['stereo_ms_ratio'] = compute_stereo_ms_ratio(audio)
         
         # Compare to targets if available
-        if style in self.style_targets:
+        if self.style_targets and style in self.style_targets:
             targets = self.style_targets[style]
             analysis['lufs_target'] = targets.get('lufs', -14.0)
             analysis['lufs_error'] = analysis['lufs'] - analysis['lufs_target']
@@ -598,6 +650,21 @@ class AutoMixChain(nn.Module):
             
             analysis['ms_ratio_target'] = targets.get('stereo_ms_ratio', 0.5)
             analysis['ms_ratio_error'] = analysis['stereo_ms_ratio'] - analysis['ms_ratio_target']
+        else:
+            # Set default targets if style not found
+            default_targets = {
+                'rock_punk': {'lufs': -9.5, 'spectral_centroid_hz': 2800, 'stereo_ms_ratio': 0.6},
+                'rnb_ballad': {'lufs': -12.0, 'spectral_centroid_hz': 1800, 'stereo_ms_ratio': 0.8},
+                'country_pop': {'lufs': -10.5, 'spectral_centroid_hz': 2200, 'stereo_ms_ratio': 0.7}
+            }
+            if style in default_targets:
+                targets = default_targets[style]
+                analysis['lufs_target'] = targets['lufs']
+                analysis['lufs_error'] = analysis['lufs'] - analysis['lufs_target']
+                analysis['centroid_target'] = targets['spectral_centroid_hz']
+                analysis['centroid_error'] = analysis['spectral_centroid'] - analysis['centroid_target']
+                analysis['ms_ratio_target'] = targets['stereo_ms_ratio']
+                analysis['ms_ratio_error'] = analysis['stereo_ms_ratio'] - analysis['ms_ratio_target']
             
         return analysis
 

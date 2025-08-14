@@ -158,7 +158,21 @@ def load_style_targets(config_path: str = None) -> Dict:
         Dictionary of style targets
     """
     if config_path is None:
-        # Use default targets
+        # Try to load from default config path
+        default_config = Path(__file__).parent.parent / "configs" / "style_targets.yaml"
+        if default_config.exists():
+            try:
+                with open(default_config, 'r') as f:
+                    config_data = yaml.safe_load(f)
+                    # Extract style_targets section if it exists
+                    if 'style_targets' in config_data:
+                        return config_data['style_targets']
+                    else:
+                        return config_data
+            except Exception:
+                pass  # Fall back to hardcoded defaults
+        
+        # Use hardcoded defaults if config not found
         return {
             'rock_punk': {
                 'lufs': -9.5,
@@ -184,7 +198,11 @@ def load_style_targets(config_path: str = None) -> Dict:
     with open(config_path, 'r') as f:
         targets = yaml.safe_load(f)
         
-    return targets
+    # Extract style_targets section if it exists
+    if 'style_targets' in targets:
+        return targets['style_targets']
+    else:
+        return targets
 
 
 def create_white_noise_stems(n_stems: int = 4, duration: float = 10.0, 
