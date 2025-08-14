@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useKV } from "@github/spark/hooks";
+import { useKV } from "@/hooks/useKV";
 import { Layout, Save, Clock, Sparkles, Play, ArrowRight } from "@phosphor-icons/react";
 import { toast } from "sonner";
 

@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { useKV } from "@github/spark/hooks";
+import { useKV } from "@/hooks/useKV";
 import { Music, Save, Play, Pause, Sparkles } from "@phosphor-icons/react";
 import { toast } from "sonner";
 

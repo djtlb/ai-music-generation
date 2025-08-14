@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useKV';
 import { toast } from 'sonner';
 import { 
   Play, 

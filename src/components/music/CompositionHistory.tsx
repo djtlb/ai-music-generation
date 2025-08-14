@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { useKV } from "@github/spark/hooks";
+import { useKV } from "@/hooks/useKV";
 import { Trash2, Edit3, Music, Layout, Wand2, Clock } from "@phosphor-icons/react";
 import { toast } from "sonner";
 

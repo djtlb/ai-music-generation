@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useKV } from "@github/spark/hooks";
+import { useKV } from "@/hooks/useKV";
 import { Wand2, Save, Sparkles } from "@phosphor-icons/react";
 import { toast } from "sonner";
 

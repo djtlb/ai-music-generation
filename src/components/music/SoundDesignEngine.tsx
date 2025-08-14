@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { useKV } from "@github/spark/hooks";
+import { useKV } from "@/hooks/useKV";
 import { 
   Waveform, 
   Save, 
@@ -183,6 +183,11 @@ Requirements:
       const result = await spark.llm(prompt, "gpt-4o", true);
       const soundDesign = JSON.parse(result);
       
+      // Validate the response structure
+      if (!soundDesign.patches || !Array.isArray(soundDesign.patches)) {
+        throw new Error("Invalid response structure: missing patches array");
+      }
+      
       setGeneratedPatches(soundDesign.patches);
       toast.success("Sound design patches generated!");
     } catch (error) {
@@ -215,9 +220,18 @@ Requirements:
       return;
     }
 
-    const compositionData = selectedComposition ? 
-      savedCompositions.find(comp => comp.id === selectedComposition) : 
-      (compositionJSON.trim() ? JSON.parse(compositionJSON) : null);
+    let compositionData = null;
+    
+    if (selectedComposition) {
+      compositionData = savedCompositions.find(comp => comp.id === selectedComposition);
+    } else if (compositionJSON.trim()) {
+      try {
+        compositionData = JSON.parse(compositionJSON);
+      } catch (e) {
+        toast.error("Invalid composition JSON format");
+        return;
+      }
+    }
 
     const newSoundDesign: SoundDesign = {
       id: Date.now().toString(),
@@ -325,7 +339,7 @@ Requirements:
                   <SelectContent>
                     {savedCompositions.map((comp) => (
                       <SelectItem key={comp.id} value={comp.id}>
-                        {comp.name} ({comp.key} {comp.style}, {comp.bpm} BPM)
+                        {comp.name} ({comp.key || 'C'} {comp.style || 'Unknown'}, {comp.bpm || 120} BPM)
                       </SelectItem>
                     ))}
                   </SelectContent>

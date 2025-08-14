@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Toaster } from "@/components/ui/sonner";
 // Music composition components
 import { 
   LyricGenerator, 
@@ -227,6 +228,7 @@ function App() {
           </TabsContent>
         </Tabs>
       </div>
+      <Toaster />
     </div>
   );
 }
