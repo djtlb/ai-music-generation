@@ -1,0 +1,40 @@
+# Boom Bap Sub-Genre Configuration
+# Inherits from hiphop_rap parent with classic boom bap characteristics
+
+parent: "hiphop_rap"
+name: "boom_bap"
+display_name: "Boom Bap"
+description: "Classic hip-hop style with hard-hitting drums and vinyl-influenced production"
+
+# Override BPM for classic feel
+bpm:
+  min: 85
+  max: 100
+  preferred: 93
+
+# Override instruments for boom bap focus
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "VINYL_SAMPLES"]
+  optional: ["PIANO", "STRINGS", "HORNS", "SCRATCH"]
+
+# Override groove for boom bap pocket
+groove:
+  swing: 0.2           # Classic hip-hop swing
+  pocket: "classic"    # Traditional hip-hop feel
+  energy: "raw"        # Raw, unpolished energy
+
+# Override mix targets for vintage sound
+mix_targets:
+  lufs: -14.0          # Less compressed than modern hip-hop
+  spectral_centroid_hz: 1700
+
+# Override mix style for vintage production
+mix_style:
+  compression_heavy: "light"
+  saturation_level: 0.4        # Vinyl-style saturation
+  stereo_enhancement: "narrow"
+
+# Override dynamics for classic feel
+dynamics:
+  crest_factor: 10.0   # More dynamic range
+  rms_target: -20.0

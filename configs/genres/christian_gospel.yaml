@@ -1,0 +1,114 @@
+# Christian/Gospel Genre Parent Configuration
+# Sacred music with spiritual themes and traditional gospel influences
+
+name: "christian_gospel"
+display_name: "Christian/Gospel"
+description: "Sacred music featuring spiritual themes, gospel influences, and uplifting arrangements"
+
+# Default BPM range
+bpm:
+  min: 70
+  max: 140
+  preferred: 100
+
+# Key signatures
+keys:
+  major: ["C", "F", "G", "Bb", "Eb", "D", "A"]
+  minor: ["Am", "Dm", "Em", "Gm", "Bm"]
+  preferred: ["C", "F", "G", "Bb"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: ["3/4", "6/8", "12/8"]
+
+# Groove characteristics
+groove:
+  swing: 0.15       # Gospel swing
+  pocket: "soulful" # Deep, soulful pocket
+  energy: "uplifting" # Uplifting energy
+  dynamics: "powerful" # Powerful, moving dynamics
+
+# Instrument roles
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "PIANO", "ORGAN"]
+  optional: ["CHOIR", "STRINGS", "BRASS", "GUITAR"]
+  lead_instruments: ["vocals", "organ", "piano", "choir"]
+  rhythm_section: ["drums", "bass", "piano", "organ"]
+
+# Chord progressions
+chord_progressions:
+  common:
+    - ["C", "Am", "F", "G"]       # I-vi-IV-V
+    - ["F", "G", "C", "Am"]       # IV-V-I-vi
+    - ["C", "F", "G", "C"]        # I-IV-V-I
+    - ["Am", "F", "C", "G"]       # vi-IV-I-V (Gospel progression)
+  
+  complexity: "moderate"          # Accessible with gospel flavor
+
+# Song structure
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "VAMP"]
+    - ["INTRO", "VERSE", "PRECHORUS", "CHORUS", "VERSE", "PRECHORUS", "CHORUS", "BREAKDOWN", "CHORUS"]
+  
+  section_lengths:
+    INTRO: 8
+    VERSE: 16
+    PRECHORUS: 8
+    CHORUS: 16
+    BRIDGE: 16
+    BREAKDOWN: 8
+    VAMP: 16
+
+# Mix targets
+mix_targets:
+  lufs: -13.0
+  true_peak_db: -1.5
+  spectral_centroid_hz: 2000
+  spectral_centroid_range:
+    min: 1600
+    max: 2600
+  stereo_ms_ratio: 0.75
+  stereo_ms_range:
+    min: 0.5
+    max: 0.9
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.35     # Rich, warm bass
+  mid_energy: 0.6      # Vocal and organ clarity
+  high_energy: 0.4     # Bright, spiritual highs
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 12.0   # Natural dynamics for expression
+  rms_target: -20.0
+
+# Mix style
+mix_style:
+  compression_heavy: "light"
+  saturation_level: 0.2
+  stereo_enhancement: "wide"
+  reverb_usage: "heavy"  # Church/cathedral reverb
+  delay_usage: "light"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.7
+  min_harmonic_stability: 0.8     # Traditional harmony
+  min_arrangement_contrast: 0.65
+  min_mix_quality: 0.75
+  min_style_match: 0.75
+  
+  max_repetition_ratio: 0.5       # Repetition for worship
+  min_melodic_interest: 0.7
+  max_timing_variance: 0.1
+
+# Sub-genres
+sub_genres:
+  - "contemporary_christian"
+  - "traditional_gospel"
+  - "praise_worship"
+  - "southern_gospel"
+  - "urban_gospel"

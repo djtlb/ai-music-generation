@@ -1,0 +1,115 @@
+# Rock Genre Parent Configuration
+# Guitar-driven music with strong rhythms and dynamic arrangements
+
+name: "rock"
+display_name: "Rock"
+description: "Guitar-driven music with strong rhythms, dynamic arrangements, and energetic performances"
+
+# Default BPM range
+bpm:
+  min: 80
+  max: 180
+  preferred: 120
+
+# Key signatures
+keys:
+  major: ["E", "A", "D", "G", "C", "F"]
+  minor: ["Em", "Am", "Dm", "Gm", "Cm", "Fm"]
+  preferred: ["E", "A", "Em", "Am"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: ["2/4", "3/4"]
+
+# Groove characteristics
+groove:
+  swing: 0.0        # Straight feel
+  pocket: "driving" # Forward momentum
+  energy: "high"    # High energy
+  dynamics: "wide"  # Wide dynamic range
+
+# Instrument roles
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "ACOUSTIC_STRUM", "LEAD"]
+  optional: ["PIANO", "ORGAN", "STRINGS"]
+  lead_instruments: ["guitar_lead", "vocals"]
+  rhythm_section: ["drums", "bass", "guitar_rhythm"]
+
+# Chord progressions
+chord_progressions:
+  common:
+    - ["E", "A", "B", "E"]        # I-IV-V-I
+    - ["Am", "F", "C", "G"]       # vi-IV-I-V
+    - ["G", "D", "Em", "C"]       # I-V-vi-IV
+    - ["E", "G", "A", "A"]        # Power chord progression
+  
+  complexity: "moderate"          # Mix of simple and complex
+
+# Song structure
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+    - ["INTRO", "VERSE", "PRECHORUS", "CHORUS", "VERSE", "PRECHORUS", "CHORUS", "SOLO", "CHORUS", "OUTRO"]
+  
+  section_lengths:
+    INTRO: 8
+    VERSE: 16
+    PRECHORUS: 8
+    CHORUS: 16
+    BRIDGE: 16
+    SOLO: 16
+    OUTRO: 8
+
+# Mix targets
+mix_targets:
+  lufs: -10.0
+  true_peak_db: -1.0
+  spectral_centroid_hz: 2600
+  spectral_centroid_range:
+    min: 2200
+    max: 3200
+  stereo_ms_ratio: 0.6
+  stereo_ms_range:
+    min: 0.4
+    max: 0.8
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.35     # Punchy bass
+  mid_energy: 0.5      # Guitar clarity
+  high_energy: 0.45    # Bright, aggressive highs
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 10.0   # Some dynamics preserved
+  rms_target: -18.0
+
+# Mix style
+mix_style:
+  compression_heavy: "moderate"
+  saturation_level: 0.4
+  stereo_enhancement: "moderate"
+  reverb_usage: "moderate"
+  delay_usage: "moderate"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.7
+  min_harmonic_stability: 0.7
+  min_arrangement_contrast: 0.75   # Dynamic contrast important
+  min_mix_quality: 0.75
+  min_style_match: 0.7
+  
+  max_repetition_ratio: 0.4
+  min_melodic_interest: 0.7
+  max_timing_variance: 0.12
+
+# Sub-genres
+sub_genres:
+  - "alternative_rock"
+  - "hard_rock"
+  - "punk_rock"
+  - "indie_rock"
+  - "classic_rock"
+  - "progressive_rock"

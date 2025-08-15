@@ -1,0 +1,114 @@
+# Hip-Hop/Rap Genre Parent Configuration
+# Rhythm-focused music with strong beats, rap vocals, and urban production
+
+name: "hiphop_rap"
+display_name: "Hip-Hop/Rap"
+description: "Rhythm-centric urban music featuring rap vocals, strong beats, and characteristic production techniques"
+
+# Default BPM range for hip-hop/rap
+bpm:
+  min: 70
+  max: 140
+  preferred: 95
+
+# Key signatures commonly used
+keys:
+  major: ["C", "F", "Bb", "Eb", "Ab"]
+  minor: ["Am", "Dm", "Gm", "Cm", "Fm"]
+  preferred: ["Dm", "Am", "Gm", "Cm"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: ["6/8"]
+
+# Groove characteristics
+groove:
+  swing: 0.1        # Slight swing/shuffle
+  pocket: "laid_back" # Relaxed timing feel
+  energy: "medium"    # Varies by sub-genre
+  dynamics: "wide"    # Wide dynamic range
+
+# Instrument roles
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK"]
+  optional: ["PIANO", "STRINGS", "BRASS", "SYNTH_PAD"]
+  lead_instruments: ["rap_vocals", "sung_vocals", "synth_lead"]
+  rhythm_section: ["drums", "bass", "piano", "percussion"]
+
+# Default chord progressions
+chord_progressions:
+  common:
+    - ["Dm", "Dm", "Dm", "Dm"]     # Single chord vamps
+    - ["Am", "Am", "F", "G"]       # Simple minor progressions
+    - ["Cm", "Ab", "Bb", "Cm"]     # Modal progressions
+    - ["Dm", "C", "Bb", "C"]       # Minor iv-III-VII-III
+  
+  complexity: "minimal"            # Often single chord or 2-chord vamps
+
+# Song structure templates
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+    - ["INTRO", "VERSE", "VERSE", "HOOK", "VERSE", "HOOK", "BRIDGE", "HOOK", "OUTRO"]
+  
+  section_lengths:
+    INTRO: 8
+    VERSE: 16
+    HOOK: 8
+    CHORUS: 16
+    BRIDGE: 16
+    OUTRO: 8
+
+# Mix targets
+mix_targets:
+  lufs: -12.0
+  true_peak_db: -1.0
+  spectral_centroid_hz: 1600
+  spectral_centroid_range:
+    min: 1200
+    max: 2200
+  stereo_ms_ratio: 0.6
+  stereo_ms_range:
+    min: 0.4
+    max: 0.8
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.5      # Strong bass presence
+  mid_energy: 0.4      # Clear midrange for vocals
+  high_energy: 0.3     # Controlled highs
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 8.0    # Moderate compression
+  rms_target: -18.0
+
+# Mix style preferences
+mix_style:
+  compression_heavy: "heavy"
+  saturation_level: 0.3
+  stereo_enhancement: "narrow"
+  reverb_usage: "minimal"
+  delay_usage: "moderate"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.6
+  min_harmonic_stability: 0.6    # Can be harmonically simple
+  min_arrangement_contrast: 0.7
+  min_mix_quality: 0.75
+  min_style_match: 0.7
+  
+  max_repetition_ratio: 0.6      # Repetition is acceptable
+  min_melodic_interest: 0.4      # Rhythm more important than melody
+  max_timing_variance: 0.15      # Can have more timing variation
+
+# Sub-genres
+sub_genres:
+  - "trap"
+  - "boom_bap"
+  - "conscious_rap"
+  - "drill"
+  - "mumble_rap"
+  - "old_school"

@@ -1,0 +1,114 @@
+# Dance/EDM Genre Parent Configuration
+# Electronic dance music with strong beats and synthesized sounds
+
+name: "dance_edm"
+display_name: "Dance/EDM"
+description: "Electronic dance music featuring synthesized sounds, strong beats, and club-oriented production"
+
+# Default BPM range
+bpm:
+  min: 110
+  max: 150
+  preferred: 128
+
+# Key signatures
+keys:
+  major: ["C", "G", "D", "A", "F", "Bb"]
+  minor: ["Am", "Em", "Bm", "F#m", "Dm", "Gm"]
+  preferred: ["Am", "C", "G", "F"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: []
+
+# Groove characteristics
+groove:
+  swing: 0.0        # Straight, quantized feel
+  pocket: "precise" # Machine-like precision
+  energy: "high"    # High energy
+  dynamics: "controlled" # Controlled for dancefloor
+
+# Instrument roles
+instruments:
+  required: ["KICK", "SNARE", "BASS_SYNTH", "LEAD_SYNTH"]
+  optional: ["PAD", "PLUCK", "ARPEGGIO", "VOCALS"]
+  lead_instruments: ["synth_lead", "vocal_samples", "pluck"]
+  rhythm_section: ["kick", "snare", "hi_hats", "bass_synth"]
+
+# Chord progressions
+chord_progressions:
+  common:
+    - ["Am", "F", "C", "G"]       # vi-IV-I-V
+    - ["C", "G", "Am", "F"]       # I-V-vi-IV
+    - ["Dm", "Bb", "F", "C"]      # ii-VII-IV-I
+    - ["Em", "C", "G", "D"]       # iii-I-V-V
+  
+  complexity: "simple"            # Repetitive for danceability
+
+# Song structure
+structure:
+  common_forms:
+    - ["INTRO", "BUILD", "DROP", "BREAKDOWN", "BUILD", "DROP", "OUTRO"]
+    - ["INTRO", "VERSE", "BUILD", "DROP", "VERSE", "BUILD", "DROP", "BREAKDOWN", "DROP"]
+  
+  section_lengths:
+    INTRO: 16
+    VERSE: 16
+    BUILD: 8
+    DROP: 32
+    BREAKDOWN: 16
+    OUTRO: 16
+
+# Mix targets
+mix_targets:
+  lufs: -8.0
+  true_peak_db: -0.5
+  spectral_centroid_hz: 2400
+  spectral_centroid_range:
+    min: 2000
+    max: 3000
+  stereo_ms_ratio: 0.8
+  stereo_ms_range:
+    min: 0.6
+    max: 1.0
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.45     # Strong sub-bass
+  mid_energy: 0.4      # Clear mids
+  high_energy: 0.5     # Bright, cutting highs
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 6.0    # Heavy compression
+  rms_target: -16.0
+
+# Mix style
+mix_style:
+  compression_heavy: "heavy"
+  saturation_level: 0.3
+  stereo_enhancement: "wide"
+  reverb_usage: "moderate"
+  delay_usage: "heavy"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.8         # Strong hooks for dancefloor
+  min_harmonic_stability: 0.6
+  min_arrangement_contrast: 0.8  # Strong build/drop contrast
+  min_mix_quality: 0.8
+  min_style_match: 0.75
+  
+  max_repetition_ratio: 0.7      # Repetition is good for dancing
+  min_melodic_interest: 0.5
+  max_timing_variance: 0.05      # Very tight timing
+
+# Sub-genres
+sub_genres:
+  - "house"
+  - "techno"
+  - "trance"
+  - "dubstep"
+  - "future_bass"
+  - "progressive_house"

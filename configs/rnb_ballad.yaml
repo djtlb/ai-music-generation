@@ -1,0 +1,52 @@
+# R&B Ballad Style Configuration
+style: rnb_ballad
+
+# Composition parameters
+duration_bars: 96
+bpm: 70
+key: C
+
+# Style-specific settings
+instruments:
+  - drums
+  - bass_finger
+  - piano
+  - strings
+  - vocals_lead
+  - vocals_harmony
+
+# Arrangement preferences
+arrangement:
+  sections:
+    intro: 8
+    verse: 12
+    chorus: 8
+    bridge: 8
+    outro: 8
+  energy_curve: "gradual_build"
+  dynamics: "smooth"
+
+# Sound design
+sound_design:
+  drum_kit: "vintage_kit"
+  bass_tone: "warm_finger"
+  piano_tone: "grand_piano"
+  strings: "lush_orchestral"
+  effects:
+    - chorus
+    - reverb
+    - delay
+
+# Mixing targets
+mixing:
+  lufs_target: -12.0
+  spectral_tilt: "warm"
+  stereo_width: 0.9
+  compression: "gentle"
+  eq_curve: "smooth"
+
+# Mastering
+mastering:
+  limiter_ceiling: -0.5
+  stereo_enhancement: 0.8
+  harmonic_saturation: 0.2

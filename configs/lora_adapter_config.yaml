@@ -1,0 +1,102 @@
+# LoRA Adapter Training Configuration
+# Settings for hierarchical style adapter training
+
+# Default LoRA Parameters
+lora:
+  # Parent adapter settings (for broad genre characteristics)
+  parent:
+    rank: 16              # Higher rank for more capacity
+    alpha: 32.0           # Higher alpha for stronger adaptation
+    dropout: 0.1          # Standard dropout
+    target_modules:       # Which layers to adapt
+      - "attention"
+      - "feed_forward"
+      - "output_projection"
+    
+  # Child adapter settings (for sub-style variations)  
+  child:
+    rank: 8               # Lower rank for focused changes
+    alpha: 16.0           # Lower alpha for subtler adaptation
+    dropout: 0.15         # Slightly higher dropout for regularization
+    target_modules:       # Fewer target modules for child
+      - "attention"
+      - "feed_forward"
+
+# Training Parameters
+training:
+  parent:
+    num_epochs: 15        # More epochs for parent training
+    batch_size: 8         # Standard batch size
+    learning_rate: 1e-4   # Standard learning rate
+    weight_decay: 0.01    # L2 regularization
+    eval_interval: 100    # Steps between evaluations
+    gradient_clip: 1.0    # Gradient clipping norm
+    warmup_steps: 500     # Learning rate warmup
+    
+  child:
+    num_epochs: 8         # Fewer epochs for child fine-tuning
+    batch_size: 4         # Smaller batch for child data
+    learning_rate: 5e-5   # Lower learning rate for fine-tuning
+    weight_decay: 0.01    # Same regularization
+    eval_interval: 50     # More frequent evaluation
+    gradient_clip: 0.5    # Stricter gradient clipping
+    warmup_steps: 100     # Shorter warmup
+
+# Data Configuration  
+data:
+  parent:
+    augmentation: true     # Use data augmentation
+    augmentation_strength: 0.2  # Moderate augmentation
+    min_files_required: 20      # Minimum files for parent training
+    
+  child:
+    augmentation: true     # More important for smaller datasets
+    augmentation_strength: 0.3  # Stronger augmentation
+    min_files_required: 5       # Fewer files needed for child
+    inherit_parent_data: false  # Don't mix parent data by default
+
+# Model Integration
+model:
+  base_model_path: "checkpoints/base_model.pt"
+  tokenizer_vocab_path: "vocab.json"
+  max_seq_len: 512
+  
+  # Freezing strategy
+  freeze_base: true        # Always freeze base model weights
+  freeze_parent_for_child: true  # Freeze parent when training child
+
+# Merging and Inference
+merging:
+  default_blend_mode: "additive"  # Default blending strategy
+  
+  # Default weights for inference
+  weights:
+    parent_default: 1.0
+    child_default: 1.0
+    
+  # Quality thresholds
+  parity_threshold: 1e-3    # MSE threshold for decode parity test
+  compatibility_check: true # Always verify compatibility
+
+# Output and Logging
+output:
+  checkpoint_dir: "./checkpoints/adapters"
+  log_level: "INFO"
+  save_best_only: false     # Save all checkpoints or just best
+  tensorboard_logging: true
+  wandb_logging: false      # Set to true if using Weights & Biases
+  
+  # Checkpoint naming
+  parent_suffix: ".lora"
+  child_suffix: ".lora"
+  merged_suffix: "_merged.pt"
+
+# Validation and Testing
+validation:
+  decode_parity_test: true     # Run decode parity tests
+  compatibility_test: true    # Run compatibility verification
+  performance_test: false     # Run performance benchmarks
+  
+  # Test parameters
+  test_samples: 10            # Number of samples for testing
+  test_seq_len: 64           # Sequence length for tests

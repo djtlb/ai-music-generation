@@ -1,0 +1,113 @@
+# Reggae/Dancehall Genre Parent Configuration
+# Jamaican music with distinctive rhythm and bass patterns
+
+name: "reggae_dancehall"
+display_name: "Reggae/Dancehall"
+description: "Jamaican music featuring distinctive rhythm patterns, heavy bass, and island-influenced production"
+
+# Default BPM range
+bpm:
+  min: 60
+  max: 110
+  preferred: 80
+
+# Key signatures
+keys:
+  major: ["C", "G", "F", "Bb", "D"]
+  minor: ["Am", "Em", "Dm", "Gm", "Bm"]
+  preferred: ["C", "G", "Am", "Em"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: []
+
+# Groove characteristics
+groove:
+  swing: 0.0        # Straight feel with emphasis on off-beats
+  pocket: "off_beat" # Emphasis on off-beats (2 and 4)
+  energy: "relaxed"  # Relaxed but rhythmic
+  dynamics: "steady" # Steady, hypnotic dynamics
+
+# Instrument roles
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "GUITAR", "ORGAN"]
+  optional: ["PIANO", "HORNS", "PERCUSSION"]
+  lead_instruments: ["vocals", "guitar", "organ", "horns"]
+  rhythm_section: ["drums", "bass", "guitar", "organ"]
+
+# Chord progressions
+chord_progressions:
+  common:
+    - ["C", "Am", "F", "G"]       # I-vi-IV-V
+    - ["Am", "F", "C", "G"]       # vi-IV-I-V
+    - ["C", "F", "G", "C"]        # I-IV-V-I
+    - ["Dm", "Am", "Bb", "F"]     # ii-vi-VII-IV
+  
+  complexity: "simple"            # Simple, repetitive progressions
+
+# Song structure
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+    - ["INTRO", "VERSE", "VERSE", "CHORUS", "VERSE", "CHORUS", "DEEJAY", "CHORUS"]
+  
+  section_lengths:
+    INTRO: 8
+    VERSE: 16
+    CHORUS: 16
+    DEEJAY: 16  # Toasting/DJ section
+    BRIDGE: 16
+    OUTRO: 8
+
+# Mix targets
+mix_targets:
+  lufs: -11.0
+  true_peak_db: -1.0
+  spectral_centroid_hz: 1700
+  spectral_centroid_range:
+    min: 1400
+    max: 2200
+  stereo_ms_ratio: 0.6
+  stereo_ms_range:
+    min: 0.4
+    max: 0.8
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.55     # Very prominent bass
+  mid_energy: 0.35     # Clear but not overpowering mids
+  high_energy: 0.3     # Controlled highs
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 8.0    # Some compression for groove
+  rms_target: -18.0
+
+# Mix style
+mix_style:
+  compression_heavy: "moderate"
+  saturation_level: 0.2
+  stereo_enhancement: "narrow"
+  reverb_usage: "heavy"  # Dub influence
+  delay_usage: "heavy"   # Dub influence
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.6
+  min_harmonic_stability: 0.7
+  min_arrangement_contrast: 0.5
+  min_mix_quality: 0.7
+  min_style_match: 0.75
+  
+  max_repetition_ratio: 0.7      # Repetition is key to groove
+  min_melodic_interest: 0.5
+  max_timing_variance: 0.1
+
+# Sub-genres
+sub_genres:
+  - "roots_reggae"
+  - "dancehall"
+  - "dub"
+  - "ska"
+  - "lovers_rock"

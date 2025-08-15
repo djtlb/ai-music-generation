@@ -1,0 +1,50 @@
+# Reggaeton Sub-Genre Configuration
+# Inherits from latin parent with reggaeton characteristics
+
+parent: "latin"
+name: "reggaeton"
+display_name: "Reggaeton"
+description: "Latin urban music with distinctive dembow rhythm and rap-influenced vocals"
+
+# Override BPM for reggaeton feel
+bpm:
+  min: 85
+  max: 105
+  preferred: 95
+
+# Override instruments for reggaeton focus
+instruments:
+  required: ["KICK", "SNARE", "DEMBOW_PATTERN", "BASS_808", "VOCALS"]
+  optional: ["SYNTH_LEAD", "HORN_SAMPLES", "PERCUSSION"]
+
+# Override groove for dembow rhythm
+groove:
+  swing: 0.1           # Slight Latin swing
+  pocket: "dembow"     # Distinctive reggaeton feel
+  energy: "urban"      # Urban energy
+
+# Override chord progressions for reggaeton simplicity
+chord_progressions:
+  common:
+    - ["Am", "Am", "Am", "Am"]     # Single chord vamps
+    - ["Dm", "Dm", "Bb", "C"]      # Simple progressions
+    - ["Am", "F", "C", "G"]        # Pop-influenced
+  
+  complexity: "minimal"            # Very simple harmony
+
+# Override mix targets for urban sound
+mix_targets:
+  lufs: -9.5           # Very loud for clubs
+  spectral_centroid_hz: 2000
+
+# Override frequency balance for bass prominence
+frequency_balance:
+  low_energy: 0.5      # Heavy bass presence
+  mid_energy: 0.4      # Clear vocals
+  high_energy: 0.35    # Controlled highs
+
+# Override mix style for urban production
+mix_style:
+  compression_heavy: "heavy"
+  saturation_level: 0.35
+  stereo_enhancement: "narrow"

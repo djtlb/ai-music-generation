@@ -1,0 +1,23 @@
+# Synth Pop Sub-Genre Configuration
+# Inherits from pop parent with electronic/synth focus
+
+parent: "pop"
+name: "synth_pop"
+display_name: "Synth Pop"
+description: "Pop music with emphasis on synthesizers and electronic production"
+
+# Override instruments for synth focus
+instruments:
+  required: ["KICK", "SNARE", "BASS_SYNTH", "SYNTH_LEAD", "SYNTH_PAD"]
+  optional: ["PIANO", "VOCALS", "STRINGS"]
+
+# Override mix targets for electronic clarity
+mix_targets:
+  lufs: -9.5           # Slightly louder for electronic music
+  spectral_centroid_hz: 2600  # Brighter for synth clarity
+
+# Override mix style for electronic production
+mix_style:
+  compression_heavy: "heavy"     # More compression for electronic sound
+  saturation_level: 0.25
+  stereo_enhancement: "wide"     # Wide stereo for synths

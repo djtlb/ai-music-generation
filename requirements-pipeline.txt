@@ -1,0 +1,12 @@
+# Requirements for the end-to-end pipeline
+hydra-core>=1.3.0
+omegaconf>=2.3.0
+PyYAML>=6.0
+numpy>=1.21.0
+librosa>=0.10.0
+mido>=1.2.10
+torch>=2.0.0
+pytorch-lightning>=2.0.0
+scipy>=1.9.0
+scikit-learn>=1.1.0
+transformers>=4.30.0  # For T5 field prediction in planner

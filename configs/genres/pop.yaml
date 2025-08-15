@@ -1,0 +1,113 @@
+# Pop Genre Parent Configuration
+# Mainstream, radio-friendly sound with strong hooks and polished production
+
+name: "pop"
+display_name: "Pop"
+description: "Mainstream pop music with catchy melodies, polished production, and radio-friendly appeal"
+
+# Default BPM range for pop music
+bpm:
+  min: 85
+  max: 135
+  preferred: 120
+
+# Key signatures commonly used in pop
+keys:
+  major: ["C", "G", "D", "A", "F", "Bb", "Eb"]
+  minor: ["Am", "Em", "Bm", "F#m", "Dm", "Gm", "Cm"]
+  preferred: ["C", "G", "Am", "F"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: ["3/4", "6/8"]
+
+# Groove characteristics
+groove:
+  swing: 0.0        # Straight feel
+  pocket: "tight"   # Tight timing
+  energy: "high"    # High energy
+  dynamics: "controlled"  # Controlled dynamics for radio
+
+# Instrument roles and typical sounds
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "PIANO", "LEAD"]
+  optional: ["ACOUSTIC_STRUM", "PAD", "STRINGS", "BRASS"]
+  lead_instruments: ["vocals", "synth_lead", "guitar_lead"]
+  rhythm_section: ["drums", "bass", "piano", "guitar_rhythm"]
+
+# Default chord progressions
+chord_progressions:
+  common:
+    - ["C", "Am", "F", "G"]    # vi-IV-I-V
+    - ["Am", "F", "C", "G"]    # Pop progression
+    - ["C", "G", "Am", "F"]    # I-V-vi-IV
+    - ["F", "G", "Am", "Am"]   # IV-V-vi
+  
+  complexity: "simple"         # Simple, memorable progressions
+
+# Song structure templates
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+    - ["INTRO", "VERSE", "PRECHORUS", "CHORUS", "VERSE", "PRECHORUS", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+  
+  section_lengths:
+    INTRO: 8
+    VERSE: 16
+    PRECHORUS: 8
+    CHORUS: 16
+    BRIDGE: 16
+    OUTRO: 8
+
+# Mix targets
+mix_targets:
+  lufs: -11.0
+  true_peak_db: -1.0
+  spectral_centroid_hz: 2200
+  spectral_centroid_range:
+    min: 1800
+    max: 2800
+  stereo_ms_ratio: 0.7
+  stereo_ms_range:
+    min: 0.5
+    max: 0.9
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.35     # Moderate bass
+  mid_energy: 0.55     # Vocal clarity priority
+  high_energy: 0.4     # Bright, sparkly highs
+
+# Dynamic characteristics  
+dynamics:
+  crest_factor: 9.0    # Some compression for radio
+  rms_target: -19.0
+  
+# Mix style preferences
+mix_style:
+  compression_heavy: "moderate"
+  saturation_level: 0.2
+  stereo_enhancement: "balanced"
+  reverb_usage: "moderate"
+  delay_usage: "light"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.7      # Strong hooks required
+  min_harmonic_stability: 0.8  # Stable harmony
+  min_arrangement_contrast: 0.6 # Good section contrast
+  min_mix_quality: 0.8        # High mix quality
+  min_style_match: 0.75       # Good style consistency
+  
+  max_repetition_ratio: 0.4   # Avoid excessive repetition
+  min_melodic_interest: 0.6   # Engaging melodies
+  max_timing_variance: 0.1    # Tight timing
+
+# Sub-genres for this parent
+sub_genres:
+  - "pop_rock"
+  - "synth_pop" 
+  - "dance_pop"
+  - "indie_pop"
+  - "electro_pop"

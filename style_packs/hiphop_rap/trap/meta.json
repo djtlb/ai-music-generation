@@ -1,0 +1,44 @@
+{
+  "genre": "hiphop_rap", 
+  "sub_genre": "trap",
+  "parent": "hiphop_rap",
+  "display_name": "Trap",
+  "description": "Hip-hop subgenre with heavy 808s, rapid hi-hats, and dark atmospheric production",
+  "reference_count": {
+    "audio": 30,
+    "midi": 60
+  },
+  "characteristics": {
+    "tempo_range": "70-90 BPM",
+    "key_preference": ["Dm", "Am", "Gm", "Cm"],
+    "typical_instruments": ["808_kick", "snare", "hi_hat_rolls", "synth_pad"],
+    "production_style": "dark_atmospheric",
+    "energy_level": "heavy"
+  },
+  "training_data": {
+    "audio_sources": [
+      "Atlanta trap scene",
+      "Modern trap hits",
+      "SoundCloud trap"
+    ],
+    "midi_sources": [
+      "808-focused patterns",
+      "Hi-hat roll sequences",
+      "Minimal melodic content"
+    ]
+  },
+  "differences_from_parent": {
+    "bpm": "70-90 (vs 70-140)",
+    "spectral_centroid": "1400 Hz (vs 1600 Hz)",
+    "bass_emphasis": "very_heavy",
+    "hi_hat_patterns": "rapid_rolls"
+  },
+  "quality_metrics": {
+    "min_hook_strength": 0.6,
+    "min_production_quality": 0.75,
+    "target_lufs": -11.0,
+    "min_808_presence": 0.8
+  },
+  "created": "2024-01-01",
+  "version": "1.0"
+}

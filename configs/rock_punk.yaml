@@ -1,0 +1,49 @@
+# Rock Punk Style Configuration
+style: rock_punk
+
+# Composition parameters
+duration_bars: 64
+bpm: 140
+key: E
+
+# Style-specific settings
+instruments:
+  - drums
+  - bass_pick
+  - guitar_distorted
+  - guitar_power_chords
+
+# Arrangement preferences
+arrangement:
+  sections:
+    intro: 4
+    verse: 8
+    chorus: 8
+    bridge: 4
+    outro: 4
+  energy_curve: "high"
+  dynamics: "aggressive"
+
+# Sound design
+sound_design:
+  drum_kit: "punk_kit"
+  bass_tone: "picked_aggressive"
+  guitar_tone: "heavy_distortion"
+  effects:
+    - overdrive
+    - compression
+    - reverb
+
+# Mixing targets
+mixing:
+  lufs_target: -9.5
+  spectral_tilt: "bright"
+  stereo_width: 0.7
+  compression: "heavy"
+  eq_curve: "v_shaped"
+
+# Mastering
+mastering:
+  limiter_ceiling: -0.3
+  stereo_enhancement: 0.6
+  harmonic_saturation: 0.4

@@ -1,0 +1,114 @@
+# Latin Genre Parent Configuration
+# Rhythmic music with Latin percussion and melodic traditions
+
+name: "latin"
+display_name: "Latin"
+description: "Rhythmic music featuring Latin percussion, melodic traditions, and diverse regional influences"
+
+# Default BPM range
+bpm:
+  min: 90
+  max: 160
+  preferred: 120
+
+# Key signatures
+keys:
+  major: ["C", "F", "Bb", "Eb", "G", "D"]
+  minor: ["Am", "Dm", "Gm", "Cm", "Em", "Bm"]
+  preferred: ["C", "Am", "F", "Dm"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: ["3/4", "6/8", "2/4"]
+
+# Groove characteristics
+groove:
+  swing: 0.15       # Moderate Latin swing
+  pocket: "rhythmic" # Complex rhythmic feel
+  energy: "warm"    # Warm, passionate energy
+  dynamics: "expressive" # Expressive dynamics
+
+# Instrument roles
+instruments:
+  required: ["KICK", "SNARE", "CONGA", "BASS_PICK", "PIANO"]
+  optional: ["TRUMPET", "TROMBONE", "GUITAR", "STRINGS", "FLUTE"]
+  lead_instruments: ["vocals", "trumpet", "guitar", "piano"]
+  rhythm_section: ["drums", "percussion", "bass", "piano"]
+
+# Chord progressions
+chord_progressions:
+  common:
+    - ["Am", "Dm", "G", "C"]      # vi-ii-V-I
+    - ["C", "Am", "F", "G"]       # I-vi-IV-V
+    - ["Dm", "G", "C", "Am"]      # ii-V-I-vi
+    - ["F", "G", "Am", "Am"]      # Montuno progression
+  
+  complexity: "sophisticated"    # Rich harmony traditions
+
+# Song structure
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+    - ["INTRO", "MONTUNO", "VERSE", "CHORUS", "MONTUNO", "VERSE", "CHORUS", "OUTRO"]
+  
+  section_lengths:
+    INTRO: 8
+    VERSE: 16
+    CHORUS: 16
+    MONTUNO: 8
+    BRIDGE: 16
+    OUTRO: 8
+
+# Mix targets
+mix_targets:
+  lufs: -11.0
+  true_peak_db: -1.0
+  spectral_centroid_hz: 2100
+  spectral_centroid_range:
+    min: 1800
+    max: 2600
+  stereo_ms_ratio: 0.7
+  stereo_ms_range:
+    min: 0.5
+    max: 0.9
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.4      # Rich bass and percussion
+  mid_energy: 0.5      # Vocal and horn clarity
+  high_energy: 0.4     # Bright percussion
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 10.0   # Natural dynamics
+  rms_target: -19.0
+
+# Mix style
+mix_style:
+  compression_heavy: "light"
+  saturation_level: 0.2
+  stereo_enhancement: "balanced"
+  reverb_usage: "moderate"
+  delay_usage: "light"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.65
+  min_harmonic_stability: 0.75
+  min_arrangement_contrast: 0.6
+  min_mix_quality: 0.75
+  min_style_match: 0.75
+  
+  max_repetition_ratio: 0.5      # Repetition for rhythm
+  min_melodic_interest: 0.7
+  max_timing_variance: 0.15      # Allow rhythmic flexibility
+
+# Sub-genres
+sub_genres:
+  - "salsa"
+  - "bachata"
+  - "reggaeton"
+  - "merengue"
+  - "cumbia"
+  - "latin_pop"

@@ -1,0 +1,112 @@
+# Singer-Songwriter Genre Parent Configuration
+# Intimate, personal music focusing on vocals and acoustic instruments
+
+name: "singer_songwriter"
+display_name: "Singer-Songwriter"
+description: "Intimate, personal music featuring acoustic instruments, lyrical storytelling, and vocal-focused arrangements"
+
+# Default BPM range
+bpm:
+  min: 60
+  max: 120
+  preferred: 85
+
+# Key signatures
+keys:
+  major: ["C", "G", "D", "A", "F", "E"]
+  minor: ["Am", "Em", "Dm", "Bm", "F#m"]
+  preferred: ["G", "C", "Em", "Am"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: ["3/4", "6/8"]
+
+# Groove characteristics
+groove:
+  swing: 0.1        # Slight natural swing
+  pocket: "natural" # Natural, human feel
+  energy: "intimate" # Intimate energy
+  dynamics: "expressive" # Expressive dynamics
+
+# Instrument roles
+instruments:
+  required: ["ACOUSTIC_STRUM", "VOCALS"]
+  optional: ["PIANO", "STRINGS", "LIGHT_DRUMS", "HARMONICA", "BASS"]
+  lead_instruments: ["vocals", "acoustic_guitar", "piano"]
+  rhythm_section: ["acoustic_guitar", "light_percussion"]
+
+# Chord progressions
+chord_progressions:
+  common:
+    - ["G", "Em", "C", "D"]       # I-vi-IV-V
+    - ["Am", "F", "C", "G"]       # vi-IV-I-V
+    - ["C", "Am", "F", "G"]       # I-vi-IV-V
+    - ["Em", "C", "G", "D"]       # iii-I-V-V
+  
+  complexity: "moderate"          # Accessible but interesting
+
+# Song structure
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+    - ["VERSE", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+  
+  section_lengths:
+    INTRO: 4
+    VERSE: 16
+    CHORUS: 16
+    BRIDGE: 16
+    OUTRO: 8
+
+# Mix targets
+mix_targets:
+  lufs: -16.0
+  true_peak_db: -2.0
+  spectral_centroid_hz: 1600
+  spectral_centroid_range:
+    min: 1300
+    max: 2100
+  stereo_ms_ratio: 0.6
+  stereo_ms_range:
+    min: 0.4
+    max: 0.8
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.25     # Gentle bass presence
+  mid_energy: 0.65     # Vocal and guitar focus
+  high_energy: 0.35    # Natural brightness
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 15.0   # Preserve natural dynamics
+  rms_target: -23.0
+
+# Mix style
+mix_style:
+  compression_heavy: "minimal"
+  saturation_level: 0.1
+  stereo_enhancement: "natural"
+  reverb_usage: "moderate"
+  delay_usage: "light"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.6
+  min_harmonic_stability: 0.8
+  min_arrangement_contrast: 0.5   # Subtle contrast
+  min_mix_quality: 0.7
+  min_style_match: 0.75
+  
+  max_repetition_ratio: 0.4
+  min_melodic_interest: 0.8       # Strong melodies important
+  max_timing_variance: 0.12       # Natural timing variation
+
+# Sub-genres
+sub_genres:
+  - "folk_acoustic"
+  - "indie_folk"
+  - "contemporary_folk"
+  - "coffee_house"
+  - "acoustic_pop"

@@ -1,0 +1,34 @@
+# Pop Rock Sub-Genre Configuration
+# Inherits from pop parent with rock influences
+
+parent: "pop"
+name: "pop_rock"
+display_name: "Pop Rock"
+description: "Pop music with rock instrumentation and slightly more aggressive sound"
+
+# Override BPM for more energetic feel
+bpm:
+  min: 100
+  max: 140
+  preferred: 125
+
+# Add rock instruments
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "ACOUSTIC_STRUM", "LEAD"]
+  optional: ["PIANO", "STRINGS", "ORGAN"]
+
+# Override mix targets for slightly more aggressive sound
+mix_targets:
+  lufs: -10.0          # Slightly louder than base pop
+  spectral_centroid_hz: 2400  # Brighter than base pop
+
+# Override frequency balance for more presence
+frequency_balance:
+  low_energy: 0.4      # More bass than base pop
+  mid_energy: 0.5      # Same as base
+  high_energy: 0.45    # More highs than base pop
+
+# Override mix style for rock elements
+mix_style:
+  compression_heavy: "moderate"  # More compression than base pop
+  saturation_level: 0.3          # More saturation

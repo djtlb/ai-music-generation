@@ -1,0 +1,43 @@
+{
+  "genre": "hiphop_rap",
+  "display_name": "Hip-Hop/Rap",
+  "description": "Rhythm-centric urban music featuring rap vocals and strong beats",
+  "reference_count": {
+    "audio": 75,
+    "midi": 120
+  },
+  "characteristics": {
+    "tempo_range": "70-140 BPM",
+    "key_preference": ["Dm", "Am", "Gm", "Cm"],
+    "typical_instruments": ["drums", "bass", "rap_vocals", "samples"],
+    "production_style": "urban",
+    "rhythm_focus": "high"
+  },
+  "training_data": {
+    "audio_sources": [
+      "Billboard Hip-Hop charts",
+      "Streaming rap hits",
+      "Underground releases"
+    ],
+    "midi_sources": [
+      "Rhythm-focused arrangements",
+      "Minimal chord progressions",
+      "Beat-driven structures"
+    ]
+  },
+  "quality_metrics": {
+    "min_hook_strength": 0.6,
+    "min_production_quality": 0.75,
+    "target_lufs": -12.0
+  },
+  "sub_genres": [
+    "trap",
+    "boom_bap",
+    "conscious_rap",
+    "drill",
+    "mumble_rap",
+    "old_school"
+  ],
+  "created": "2024-01-01",
+  "version": "1.0"
+}
