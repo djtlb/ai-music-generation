@@ -1,0 +1,43 @@
+{
+  "genre": "pop",
+  "sub_genre": "pop_rock",
+  "parent": "pop",
+  "display_name": "Pop Rock",
+  "description": "Pop music with rock instrumentation and slightly more aggressive sound",
+  "reference_count": {
+    "audio": 25,
+    "midi": 50
+  },
+  "characteristics": {
+    "tempo_range": "100-140 BPM",
+    "key_preference": ["E", "A", "C", "G"],
+    "typical_instruments": ["electric_guitar", "bass_guitar", "drums", "vocals", "piano"],
+    "production_style": "punchy",
+    "energy_level": "high"
+  },
+  "training_data": {
+    "audio_sources": [
+      "Rock-influenced pop hits",
+      "Guitar-driven pop songs",
+      "Arena rock anthems"
+    ],
+    "midi_sources": [
+      "Guitar-focused arrangements",
+      "Power chord progressions",
+      "Dynamic song structures"
+    ]
+  },
+  "differences_from_parent": {
+    "lufs": "-10.0 (vs -11.0)",
+    "spectral_centroid": "2400 Hz (vs 2200 Hz)",
+    "compression": "moderate (vs light)",
+    "guitar_prominence": "high"
+  },
+  "quality_metrics": {
+    "min_hook_strength": 0.7,
+    "min_production_quality": 0.75,
+    "target_lufs": -10.0
+  },
+  "created": "2024-01-01",
+  "version": "1.0"
+}

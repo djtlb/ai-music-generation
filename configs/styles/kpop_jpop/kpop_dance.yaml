@@ -1,0 +1,46 @@
+# K-Pop Dance Sub-Genre Configuration
+# Inherits from kpop_jpop parent with dance/performance focus
+
+parent: "kpop_jpop"
+name: "kpop_dance"
+display_name: "K-Pop Dance"
+description: "High-energy K-Pop with choreography-focused arrangements and electronic production"
+
+# Override BPM for dance performance
+bpm:
+  min: 110
+  max: 140
+  preferred: 125
+
+# Override instruments for dance focus
+instruments:
+  required: ["KICK", "SNARE", "BASS_SYNTH", "SYNTH_LEAD", "VOCALS"]
+  optional: ["STRINGS", "BRASS", "ARPEGGIO", "VOCAL_CHOPS"]
+
+# Override groove for dance precision
+groove:
+  swing: 0.0           # Straight, quantized feel
+  pocket: "precise"    # Very tight for choreography
+  energy: "explosive"  # High-energy builds and drops
+
+# Override structure for dance arrangements
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "BUILDUP", "DROP", "VERSE", "BUILDUP", "DROP", "BRIDGE", "FINAL_DROP"]
+    - ["INTRO", "PRECHORUS", "CHORUS", "VERSE", "PRECHORUS", "CHORUS", "DANCE_BREAK", "FINAL_CHORUS"]
+
+# Override mix targets for maximum impact
+mix_targets:
+  lufs: -9.0           # Very loud for performance
+  spectral_centroid_hz: 2500  # Very bright and cutting
+
+# Override mix style for electronic punch
+mix_style:
+  compression_heavy: "heavy"
+  saturation_level: 0.3
+  stereo_enhancement: "wide"
+
+# Override QA for performance requirements
+qa_thresholds:
+  min_hook_strength: 0.85        # Very catchy for choreography
+  min_arrangement_contrast: 0.85  # Strong dynamic changes for performance

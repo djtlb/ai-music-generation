@@ -1,0 +1,114 @@
+# Jazz-Influenced Genre Parent Configuration
+# Music with jazz harmony, improvisation, and sophisticated arrangements
+
+name: "jazz_influenced"
+display_name: "Jazz-Influenced"
+description: "Music featuring jazz harmony, improvisation elements, and sophisticated musical arrangements"
+
+# Default BPM range
+bpm:
+  min: 60
+  max: 160
+  preferred: 110
+
+# Key signatures
+keys:
+  major: ["C", "F", "Bb", "Eb", "Ab", "Db", "G", "D"]
+  minor: ["Am", "Dm", "Gm", "Cm", "Fm", "Bbm", "Em", "Bm"]
+  preferred: ["Bb", "F", "C", "G"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: ["3/4", "5/4", "7/4", "6/8"]
+
+# Groove characteristics
+groove:
+  swing: 0.3        # Strong swing feel
+  pocket: "sophisticated" # Complex, sophisticated feel
+  energy: "smooth"   # Smooth, relaxed energy
+  dynamics: "wide"   # Wide dynamic range
+
+# Instrument roles
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "PIANO"]
+  optional: ["TRUMPET", "SAX", "TROMBONE", "GUITAR", "VIBES"]
+  lead_instruments: ["piano", "trumpet", "sax", "vocals", "guitar"]
+  rhythm_section: ["drums", "bass", "piano", "guitar"]
+
+# Chord progressions
+chord_progressions:
+  common:
+    - ["Cmaj7", "Am7", "Dm7", "G7"]    # I-vi-ii-V
+    - ["Am7", "D7", "Gmaj7", "Cmaj7"]  # ii-V-I-IV
+    - ["Fmaj7", "Em7", "Am7", "Dm7"]   # Jazz progression
+    - ["Dm7", "G7", "Em7", "Am7"]      # ii-V-iii-vi
+  
+  complexity: "advanced"              # Extended and altered chords
+
+# Song structure
+structure:
+  common_forms:
+    - ["INTRO", "HEAD", "SOLO1", "SOLO2", "HEAD", "OUTRO"]
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "SOLO", "CHORUS", "OUTRO"]
+  
+  section_lengths:
+    INTRO: 8
+    HEAD: 32      # Jazz standard form
+    VERSE: 16
+    CHORUS: 16
+    SOLO1: 32
+    SOLO2: 32
+    OUTRO: 8
+
+# Mix targets
+mix_targets:
+  lufs: -18.0
+  true_peak_db: -3.0
+  spectral_centroid_hz: 1900
+  spectral_centroid_range:
+    min: 1500
+    max: 2500
+  stereo_ms_ratio: 0.7
+  stereo_ms_range:
+    min: 0.5
+    max: 0.9
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.3      # Clean, articulate bass
+  mid_energy: 0.6      # Instrument clarity
+  high_energy: 0.4     # Natural brightness
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 18.0   # Wide dynamic range
+  rms_target: -25.0
+
+# Mix style
+mix_style:
+  compression_heavy: "minimal"
+  saturation_level: 0.05
+  stereo_enhancement: "natural"
+  reverb_usage: "moderate"
+  delay_usage: "minimal"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.5          # Sophistication over hooks
+  min_harmonic_stability: 0.9     # Very sophisticated harmony
+  min_arrangement_contrast: 0.7
+  min_mix_quality: 0.8
+  min_style_match: 0.8
+  
+  max_repetition_ratio: 0.3       # Less repetitive
+  min_melodic_interest: 0.9       # High melodic sophistication
+  max_timing_variance: 0.2        # Allow expressive timing
+
+# Sub-genres
+sub_genres:
+  - "smooth_jazz"
+  - "jazz_fusion"
+  - "contemporary_jazz"
+  - "neo_soul_jazz"
+  - "acid_jazz"

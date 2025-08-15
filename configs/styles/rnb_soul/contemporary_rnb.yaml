@@ -1,0 +1,35 @@
+# Contemporary R&B Sub-Genre Configuration
+# Inherits from rnb_soul parent with modern production
+
+parent: "rnb_soul"
+name: "contemporary_rnb"
+display_name: "Contemporary R&B"
+description: "Modern R&B with hip-hop influenced production and contemporary vocal styles"
+
+# Override BPM for contemporary feel
+bpm:
+  min: 70
+  max: 120
+  preferred: 90
+
+# Override instruments for contemporary focus
+instruments:
+  required: ["KICK", "SNARE", "BASS_SYNTH", "PIANO", "VOCALS"]
+  optional: ["STRINGS", "BRASS", "SYNTH_PAD", "808"]
+
+# Override groove for modern pocket
+groove:
+  swing: 0.15          # Less swing than traditional R&B
+  pocket: "modern"     # Contemporary pocket
+  energy: "smooth"
+
+# Override mix targets for modern sound
+mix_targets:
+  lufs: -12.0          # Slightly louder than traditional R&B
+  spectral_centroid_hz: 1900
+
+# Override mix style for contemporary production
+mix_style:
+  compression_heavy: "moderate"    # More compression than traditional
+  saturation_level: 0.2
+  stereo_enhancement: "wide"

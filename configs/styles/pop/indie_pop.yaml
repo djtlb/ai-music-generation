@@ -1,0 +1,34 @@
+# Indie Pop Sub-Genre Configuration
+# Inherits from pop parent with indie/alternative sensibilities
+
+parent: "pop"
+name: "indie_pop"
+display_name: "Indie Pop"
+description: "Alternative pop music with indie sensibilities and organic production"
+
+# Override BPM for more relaxed feel
+bpm:
+  min: 80
+  max: 120
+  preferred: 105
+
+# Override instruments for indie focus
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "ACOUSTIC_STRUM"]
+  optional: ["PIANO", "STRINGS", "ORGAN", "HARMONICA"]
+
+# Override mix targets for indie aesthetic
+mix_targets:
+  lufs: -12.0          # Less compressed than mainstream pop
+  spectral_centroid_hz: 2000  # Warmer than mainstream pop
+
+# Override mix style for organic sound
+mix_style:
+  compression_heavy: "light"    # Minimal compression
+  saturation_level: 0.15        # Subtle saturation
+  stereo_enhancement: "balanced"
+
+# Override dynamics for natural feel
+dynamics:
+  crest_factor: 12.0   # More dynamic range
+  rms_target: -21.0

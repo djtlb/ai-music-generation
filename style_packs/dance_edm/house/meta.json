@@ -1,0 +1,44 @@
+{
+  "genre": "dance_edm",
+  "sub_genre": "house", 
+  "parent": "dance_edm",
+  "display_name": "House",
+  "description": "Four-on-the-floor dance music with disco influences and repetitive rhythms",
+  "reference_count": {
+    "audio": 40,
+    "midi": 80
+  },
+  "characteristics": {
+    "tempo_range": "120-130 BPM",
+    "key_preference": ["Am", "C", "F", "G"],
+    "typical_instruments": ["four_on_floor_kick", "hi_hat", "bass_synth", "disco_samples"],
+    "production_style": "groove_focused",
+    "energy_level": "steady_build"
+  },
+  "training_data": {
+    "audio_sources": [
+      "Classic Chicago house",
+      "Deep house selections",
+      "Disco house tracks"
+    ],
+    "midi_sources": [
+      "Four-on-the-floor patterns",
+      "Disco-influenced progressions", 
+      "Repetitive groove structures"
+    ]
+  },
+  "differences_from_parent": {
+    "bpm": "120-130 (vs 110-150)",
+    "groove": "disco_influenced",
+    "structure": "repetitive_builds",
+    "vocal_style": "disco_samples"
+  },
+  "quality_metrics": {
+    "min_hook_strength": 0.75,
+    "min_production_quality": 0.8,
+    "target_lufs": -8.0,
+    "min_groove_consistency": 0.9
+  },
+  "created": "2024-01-01",
+  "version": "1.0"
+}

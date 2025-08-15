@@ -1,0 +1,112 @@
+# Country Genre Parent Configuration
+# Storytelling music with acoustic instruments and traditional American roots
+
+name: "country"
+display_name: "Country"
+description: "Storytelling music featuring acoustic instruments, traditional American roots, and narrative vocals"
+
+# Default BPM range
+bpm:
+  min: 70
+  max: 140
+  preferred: 100
+
+# Key signatures
+keys:
+  major: ["G", "C", "D", "A", "E", "F"]
+  minor: ["Em", "Am", "Dm", "Bm"]
+  preferred: ["G", "C", "D", "A"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: ["3/4", "2/4"]
+
+# Groove characteristics
+groove:
+  swing: 0.1        # Slight shuffle
+  pocket: "steady"  # Steady, reliable feel
+  energy: "moderate" # Varies by sub-genre
+  dynamics: "natural" # Natural dynamics
+
+# Instrument roles
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "ACOUSTIC_STRUM"]
+  optional: ["PIANO", "STEEL_GUITAR", "FIDDLE", "BANJO", "MANDOLIN"]
+  lead_instruments: ["vocals", "steel_guitar", "fiddle", "guitar_lead"]
+  rhythm_section: ["drums", "bass", "acoustic_guitar"]
+
+# Chord progressions
+chord_progressions:
+  common:
+    - ["G", "C", "G", "D"]        # I-IV-I-V
+    - ["C", "F", "G", "C"]        # I-IV-V-I
+    - ["G", "Em", "C", "D"]       # I-vi-IV-V
+    - ["Am", "F", "C", "G"]       # vi-IV-I-V
+  
+  complexity: "simple"            # Traditional, accessible
+
+# Song structure
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+    - ["INTRO", "VERSE", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "CHORUS"]
+  
+  section_lengths:
+    INTRO: 4
+    VERSE: 16
+    CHORUS: 16
+    BRIDGE: 16
+    OUTRO: 8
+
+# Mix targets
+mix_targets:
+  lufs: -12.0
+  true_peak_db: -1.5
+  spectral_centroid_hz: 2000
+  spectral_centroid_range:
+    min: 1700
+    max: 2500
+  stereo_ms_ratio: 0.7
+  stereo_ms_range:
+    min: 0.5
+    max: 0.9
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.3      # Clean, controlled bass
+  mid_energy: 0.6      # Vocal and instrument clarity
+  high_energy: 0.4     # Natural brightness
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 11.0   # Preserve natural dynamics
+  rms_target: -20.0
+
+# Mix style
+mix_style:
+  compression_heavy: "light"
+  saturation_level: 0.2
+  stereo_enhancement: "balanced"
+  reverb_usage: "moderate"
+  delay_usage: "light"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.65
+  min_harmonic_stability: 0.8    # Traditional harmony
+  min_arrangement_contrast: 0.6
+  min_mix_quality: 0.75
+  min_style_match: 0.75
+  
+  max_repetition_ratio: 0.4
+  min_melodic_interest: 0.7      # Strong melodies important
+  max_timing_variance: 0.08      # Tight timing
+
+# Sub-genres
+sub_genres:
+  - "country_pop"
+  - "country_rock"
+  - "bluegrass"
+  - "outlaw_country"
+  - "modern_country"

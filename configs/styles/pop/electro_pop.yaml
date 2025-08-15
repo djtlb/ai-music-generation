@@ -1,0 +1,23 @@
+# Electro Pop Sub-Genre Configuration
+# Inherits from pop parent with electronic/retro influences
+
+parent: "pop"
+name: "electro_pop"
+display_name: "Electro Pop"
+description: "Pop music with retro electronic influences and synthesized production"
+
+# Override instruments for electro focus
+instruments:
+  required: ["KICK", "SNARE", "BASS_SYNTH", "SYNTH_LEAD", "ARPEGGIO"]
+  optional: ["VOCALS", "STRINGS", "DRUM_MACHINE"]
+
+# Override mix targets for electronic punch
+mix_targets:
+  lufs: -9.0           # Loud for electronic impact
+  spectral_centroid_hz: 2700
+
+# Override mix style for retro-electronic sound
+mix_style:
+  compression_heavy: "heavy"
+  saturation_level: 0.35       # More saturation for character
+  stereo_enhancement: "wide"

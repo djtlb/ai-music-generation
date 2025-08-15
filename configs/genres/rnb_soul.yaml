@@ -1,0 +1,114 @@
+# R&B/Soul Genre Parent Configuration
+# Smooth, soulful music with rich harmonies and expressive vocals
+
+name: "rnb_soul"
+display_name: "R&B/Soul"
+description: "Smooth, soulful music featuring rich harmonies, expressive vocals, and sophisticated production"
+
+# Default BPM range
+bpm:
+  min: 65
+  max: 130
+  preferred: 85
+
+# Key signatures
+keys:
+  major: ["C", "F", "Bb", "Eb", "Ab", "Db"]
+  minor: ["Am", "Dm", "Gm", "Cm", "Fm", "Bbm"]
+  preferred: ["Bb", "Eb", "F", "Gm"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: ["12/8", "6/8"]
+
+# Groove characteristics
+groove:
+  swing: 0.2        # Moderate swing feel
+  pocket: "deep"    # Deep, soulful pocket
+  energy: "smooth"  # Smooth energy
+  dynamics: "expressive" # Wide dynamic expression
+
+# Instrument roles
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "PIANO"]
+  optional: ["STRINGS", "BRASS", "ORGAN", "GUITAR"]
+  lead_instruments: ["vocals", "piano", "organ", "guitar"]
+  rhythm_section: ["drums", "bass", "piano", "guitar"]
+
+# Chord progressions
+chord_progressions:
+  common:
+    - ["Bb", "Gm", "Cm", "F"]      # I-vi-ii-V
+    - ["Eb", "Cm", "Fm", "Bb"]     # I-vi-ii-V in Eb
+    - ["Dm", "G", "C", "Am"]       # ii-V-I-vi
+    - ["F", "Dm", "Bb", "C"]       # Gospel progression
+  
+  complexity: "sophisticated"      # Rich, extended chords
+
+# Song structure
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+    - ["INTRO", "VERSE", "PRECHORUS", "CHORUS", "VERSE", "PRECHORUS", "CHORUS", "BRIDGE", "CHORUS", "VAMP"]
+  
+  section_lengths:
+    INTRO: 8
+    VERSE: 16
+    PRECHORUS: 8
+    CHORUS: 16
+    BRIDGE: 16
+    VAMP: 16
+    OUTRO: 8
+
+# Mix targets
+mix_targets:
+  lufs: -14.0
+  true_peak_db: -2.0
+  spectral_centroid_hz: 1800
+  spectral_centroid_range:
+    min: 1400
+    max: 2400
+  stereo_ms_ratio: 0.8
+  stereo_ms_range:
+    min: 0.6
+    max: 1.0
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.4      # Rich, warm bass
+  mid_energy: 0.6      # Vocal clarity
+  high_energy: 0.35    # Smooth, silky highs
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 12.0   # Preserve dynamics
+  rms_target: -21.0
+
+# Mix style
+mix_style:
+  compression_heavy: "light"
+  saturation_level: 0.15
+  stereo_enhancement: "wide"
+  reverb_usage: "heavy"
+  delay_usage: "moderate"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.65
+  min_harmonic_stability: 0.85   # Sophisticated harmony
+  min_arrangement_contrast: 0.6
+  min_mix_quality: 0.8
+  min_style_match: 0.75
+  
+  max_repetition_ratio: 0.35     # Less repetitive
+  min_melodic_interest: 0.8      # Strong melodies
+  max_timing_variance: 0.08      # Tight but expressive
+
+# Sub-genres
+sub_genres:
+  - "contemporary_rnb"
+  - "neo_soul"
+  - "classic_soul"
+  - "funk_soul"
+  - "gospel_influenced"

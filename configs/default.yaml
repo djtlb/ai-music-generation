@@ -1,0 +1,96 @@
+# Default Pipeline Configuration
+# This file contains the base configuration that other style configs extend
+
+# Global settings
+defaults:
+  - _self_
+
+# Default composition parameters
+duration_bars: 32
+bpm: 120
+key: C
+time_signature: "4/4"
+
+# Style definitions
+styles:
+  rock_punk:
+    default_bpm: 140
+    default_key: E
+    instruments: ["drums", "bass_pick", "guitar_distorted", "guitar_clean"]
+    energy_profile: "high"
+    
+  rnb_ballad:
+    default_bpm: 70
+    default_key: C
+    instruments: ["drums", "bass_finger", "piano", "strings", "vocals"]
+    energy_profile: "smooth"
+    
+  country_pop:
+    default_bpm: 110
+    default_key: G
+    instruments: ["drums", "bass_pick", "acoustic_guitar", "electric_guitar", "fiddle"]
+    energy_profile: "balanced"
+
+# Pipeline settings
+pipeline:
+  temp_dir_prefix: "music_pipeline_"
+  output_dir: "exports"
+  parallel_processing: false
+  error_tolerance: "strict"
+
+# Tokenizer settings
+tokenizer:
+  vocab_size: 1024
+  sequence_length: 512
+  special_tokens:
+    - "STYLE"
+    - "TEMPO"
+    - "KEY"
+    - "SECTION"
+    - "BAR"
+    - "POS"
+
+# Arrangement generation
+arrangement:
+  max_sections: 8
+  min_section_length: 4
+  max_section_length: 16
+  coverage_penalty: 0.1
+  repetition_penalty: 0.2
+
+# Melody/harmony generation
+melody_harmony:
+  temperature: 0.8
+  nucleus_p: 0.9
+  max_sequence_length: 1024
+  in_scale_penalty: 0.5
+  chord_compatibility_penalty: 0.3
+
+# Audio rendering
+audio:
+  sample_rate: 48000
+  bit_depth: 16
+  render_format: "wav"
+  normalization: "peak"
+  latency_compensation: true
+
+# Mixing targets per style
+mixing:
+  targets:
+    rock_punk_lufs: -9.5
+    rock_punk_spectral_centroid: 2500
+    rock_punk_stereo_width: 0.7
+    
+    rnb_ballad_lufs: -12.0
+    rnb_ballad_spectral_centroid: 1800
+    rnb_ballad_stereo_width: 0.9
+    
+    country_pop_lufs: -10.5
+    country_pop_spectral_centroid: 2200
+    country_pop_stereo_width: 0.8
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_output: true

@@ -1,0 +1,114 @@
+# Afro Genre Parent Configuration
+# African-influenced music with polyrhythmic elements and traditional instruments
+
+name: "afro"
+display_name: "Afro"
+description: "African-influenced music featuring polyrhythmic elements, traditional instruments, and contemporary fusion"
+
+# Default BPM range
+bpm:
+  min: 85
+  max: 130
+  preferred: 105
+
+# Key signatures
+keys:
+  major: ["C", "F", "G", "Bb", "Eb"]
+  minor: ["Am", "Dm", "Gm", "Cm", "Em"]
+  preferred: ["C", "Am", "G", "Em"]
+
+# Time signatures
+time_signatures:
+  primary: "4/4"
+  secondary: ["6/8", "12/8", "3/4"]
+
+# Groove characteristics
+groove:
+  swing: 0.2        # Moderate African swing
+  pocket: "polyrhythmic" # Complex polyrhythmic feel
+  energy: "organic"  # Organic, natural energy
+  dynamics: "flowing" # Flowing dynamics
+
+# Instrument roles
+instruments:
+  required: ["KICK", "SNARE", "DJEMBE", "BASS_PICK", "PIANO"]
+  optional: ["TALKING_DRUM", "KORA", "GUITAR", "HORNS", "VOCALS"]
+  lead_instruments: ["vocals", "kora", "guitar", "flute"]
+  rhythm_section: ["drums", "percussion", "bass"]
+
+# Chord progressions
+chord_progressions:
+  common:
+    - ["C", "F", "G", "C"]        # Simple modal progressions
+    - ["Am", "F", "G", "Am"]      # Minor modal
+    - ["C", "Bb", "F", "C"]       # Pentatonic-based
+    - ["G", "F", "C", "G"]        # Traditional African harmony
+  
+  complexity: "modal"             # Modal, pentatonic influences
+
+# Song structure
+structure:
+  common_forms:
+    - ["INTRO", "VERSE", "CHORUS", "VERSE", "CHORUS", "BRIDGE", "CHORUS", "OUTRO"]
+    - ["INTRO", "CALL", "RESPONSE", "VERSE", "CALL", "RESPONSE", "BRIDGE", "OUTRO"]
+  
+  section_lengths:
+    INTRO: 8
+    VERSE: 16
+    CHORUS: 16
+    CALL: 8
+    RESPONSE: 8
+    BRIDGE: 16
+    OUTRO: 8
+
+# Mix targets
+mix_targets:
+  lufs: -12.0
+  true_peak_db: -1.5
+  spectral_centroid_hz: 1900
+  spectral_centroid_range:
+    min: 1500
+    max: 2400
+  stereo_ms_ratio: 0.6
+  stereo_ms_range:
+    min: 0.4
+    max: 0.8
+
+# Frequency balance
+frequency_balance:
+  low_energy: 0.4      # Rich bass and drums
+  mid_energy: 0.5      # Vocal and instrument warmth
+  high_energy: 0.3     # Natural highs
+
+# Dynamic characteristics
+dynamics:
+  crest_factor: 12.0   # Wide natural dynamics
+  rms_target: -21.0
+
+# Mix style
+mix_style:
+  compression_heavy: "minimal"
+  saturation_level: 0.1
+  stereo_enhancement: "natural"
+  reverb_usage: "moderate"
+  delay_usage: "light"
+
+# QA thresholds
+qa_thresholds:
+  min_hook_strength: 0.6
+  min_harmonic_stability: 0.7
+  min_arrangement_contrast: 0.6
+  min_mix_quality: 0.7
+  min_style_match: 0.7
+  
+  max_repetition_ratio: 0.6      # Repetition for rhythmic patterns
+  min_melodic_interest: 0.6
+  max_timing_variance: 0.2       # Allow natural timing variation
+
+# Sub-genres
+sub_genres:
+  - "afrobeat"
+  - "afro_pop"
+  - "highlife"
+  - "amapiano"
+  - "afro_house"

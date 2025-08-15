@@ -1,0 +1,42 @@
+{
+  "genre": "pop",
+  "display_name": "Pop",
+  "description": "Mainstream pop music with catchy melodies and polished production",
+  "reference_count": {
+    "audio": 50,
+    "midi": 100
+  },
+  "characteristics": {
+    "tempo_range": "85-135 BPM",
+    "key_preference": ["C", "G", "Am", "F"],
+    "typical_instruments": ["vocals", "piano", "guitar", "bass", "drums"],
+    "production_style": "polished",
+    "target_audience": "mainstream"
+  },
+  "training_data": {
+    "audio_sources": [
+      "Billboard Hot 100 (2015-2023)",
+      "Radio singles",
+      "Streaming hits"
+    ],
+    "midi_sources": [
+      "Professional MIDI transcriptions",
+      "Hook-focused arrangements",
+      "Radio-ready structures"
+    ]
+  },
+  "quality_metrics": {
+    "min_hook_strength": 0.7,
+    "min_production_quality": 0.8,
+    "target_lufs": -11.0
+  },
+  "sub_genres": [
+    "pop_rock",
+    "synth_pop", 
+    "dance_pop",
+    "indie_pop",
+    "electro_pop"
+  ],
+  "created": "2024-01-01",
+  "version": "1.0"
+}

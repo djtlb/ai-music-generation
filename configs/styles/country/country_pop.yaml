@@ -1,0 +1,33 @@
+# Country Pop Sub-Genre Configuration
+# Inherits from country parent with pop crossover appeal
+
+parent: "country"
+name: "country_pop"
+display_name: "Country Pop"
+description: "Country music with pop production and mainstream crossover appeal"
+
+# Override BPM for pop appeal
+bpm:
+  min: 85
+  max: 125
+  preferred: 110
+
+# Override instruments for pop crossover
+instruments:
+  required: ["KICK", "SNARE", "BASS_PICK", "ACOUSTIC_STRUM", "PIANO"]
+  optional: ["STEEL_GUITAR", "STRINGS", "FIDDLE", "ELECTRIC_GUITAR"]
+
+# Override mix targets for radio-friendly sound
+mix_targets:
+  lufs: -10.5          # Louder than traditional country
+  spectral_centroid_hz: 2200  # Brighter than traditional country
+
+# Override mix style for polished production
+mix_style:
+  compression_heavy: "moderate"    # More compression than traditional
+  saturation_level: 0.25
+  stereo_enhancement: "balanced"
+
+# Override QA for mainstream appeal
+qa_thresholds:
+  min_hook_strength: 0.75        # Higher hook requirement than traditional country

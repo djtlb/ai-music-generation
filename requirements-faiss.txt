@@ -1,0 +1,11 @@
+"""
+Requirements for FAISS hierarchical retrieval system.
+"""
+
+# Core dependencies
+faiss-cpu>=1.7.4
+numpy>=1.21.0
+
+# Existing dependencies (should already be available)
+# torch>=1.12.0
+# transformers>=4.21.0

@@ -1,0 +1,35 @@
+# Dance Pop Sub-Genre Configuration
+# Inherits from pop parent with dance/club orientation
+
+parent: "pop"
+name: "dance_pop"
+display_name: "Dance Pop"
+description: "Pop music with strong dance beats and club-oriented production"
+
+# Override BPM for dance floor
+bpm:
+  min: 110
+  max: 135
+  preferred: 128
+
+# Override instruments for dance focus
+instruments:
+  required: ["KICK", "SNARE", "BASS_SYNTH", "SYNTH_LEAD"]
+  optional: ["PIANO", "VOCALS", "STRINGS", "ARPEGGIO"]
+
+# Override groove for dance feel
+groove:
+  swing: 0.0           # Straight quantized feel
+  pocket: "precise"    # Machine-like precision
+  energy: "high"       # High energy for dancing
+
+# Override mix targets for club sound
+mix_targets:
+  lufs: -8.5           # Very loud for clubs
+  spectral_centroid_hz: 2500
+
+# Override mix style for dance production
+mix_style:
+  compression_heavy: "heavy"
+  saturation_level: 0.3
+  stereo_enhancement: "wide"

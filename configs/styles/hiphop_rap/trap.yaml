@@ -1,0 +1,41 @@
+# Trap Sub-Genre Configuration
+# Inherits from hiphop_rap parent with trap characteristics
+
+parent: "hiphop_rap"
+name: "trap"
+display_name: "Trap"
+description: "Hip-hop subgenre with heavy 808s, rapid hi-hats, and dark atmospheric production"
+
+# Override BPM for trap feel
+bpm:
+  min: 70
+  max: 90
+  preferred: 75
+
+# Override instruments for trap focus
+instruments:
+  required: ["KICK_808", "SNARE", "HI_HAT_ROLL", "BASS_808"]
+  optional: ["SYNTH_PAD", "PLUCK", "VOCAL_SAMPLES"]
+
+# Override groove for trap pocket
+groove:
+  swing: 0.0           # Straight quantized
+  pocket: "heavy"      # Heavy, slow feel
+  energy: "dark"       # Dark energy
+
+# Override mix targets for trap sound
+mix_targets:
+  lufs: -11.0
+  spectral_centroid_hz: 1400   # Darker than base hip-hop
+
+# Override frequency balance for 808 prominence
+frequency_balance:
+  low_energy: 0.6      # Very heavy bass/808s
+  mid_energy: 0.3      # Reduced mids
+  high_energy: 0.3     # Controlled highs
+
+# Override mix style for trap production
+mix_style:
+  compression_heavy: "heavy"
+  saturation_level: 0.4
+  stereo_enhancement: "narrow"

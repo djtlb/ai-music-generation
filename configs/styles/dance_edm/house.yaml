@@ -1,0 +1,37 @@
+# House Sub-Genre Configuration
+# Inherits from dance_edm parent with house characteristics
+
+parent: "dance_edm"
+name: "house"
+display_name: "House"
+description: "Four-on-the-floor dance music with disco influences and repetitive rhythms"
+
+# Override BPM for house feel
+bpm:
+  min: 120
+  max: 130
+  preferred: 125
+
+# Override instruments for house focus
+instruments:
+  required: ["KICK_4x4", "HI_HAT", "BASS_SYNTH", "DISCO_SAMPLES"]
+  optional: ["VOCALS", "PIANO", "STRINGS", "PERCUSSION"]
+
+# Override groove for house pocket
+groove:
+  swing: 0.05          # Slight shuffle
+  pocket: "disco"      # Disco-influenced feel
+  energy: "groove"     # Groove-focused energy
+
+# Override chord progressions for house harmony
+chord_progressions:
+  common:
+    - ["Am", "F", "C", "G"]      # Classic house progression
+    - ["Dm", "Bb", "F", "C"]     # Disco-influenced
+    - ["Em", "C", "G", "D"]      # Uplifting house
+  
+# Override mix style for house production
+mix_style:
+  compression_heavy: "moderate"
+  saturation_level: 0.25
+  stereo_enhancement: "wide"

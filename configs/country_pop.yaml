@@ -1,0 +1,56 @@
+# Country Pop Style Configuration
+style: country_pop
+
+# Composition parameters
+duration_bars: 80
+bpm: 110
+key: G
+
+# Style-specific settings
+instruments:
+  - drums
+  - bass_pick
+  - acoustic_guitar
+  - electric_guitar
+  - fiddle
+  - vocals
+
+# Arrangement preferences
+arrangement:
+  sections:
+    intro: 4
+    verse: 8
+    chorus: 8
+    verse2: 8
+    chorus2: 8
+    bridge: 4
+    final_chorus: 8
+    outro: 4
+  energy_curve: "steady_with_peaks"
+  dynamics: "balanced"
+
+# Sound design
+sound_design:
+  drum_kit: "country_kit"
+  bass_tone: "bright_pick"
+  acoustic_guitar: "steel_string"
+  electric_guitar: "clean_twang"
+  fiddle: "traditional"
+  effects:
+    - light_reverb
+    - compression
+    - eq
+
+# Mixing targets
+mixing:
+  lufs_target: -10.5
+  spectral_tilt: "balanced"
+  stereo_width: 0.8
+  compression: "moderate"
+  eq_curve: "presence_boost"
+
+# Mastering
+mastering:
+  limiter_ceiling: -0.4
+  stereo_enhancement: 0.7
+  harmonic_saturation: 0.3
