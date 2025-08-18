@@ -1,15 +1,14 @@
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig, PluginOption } from "vite";
 
-import sparkPlugin from "@github/spark/spark-vite-plugin";
-import createIconImportProxy from "@github/spark/vitePhosphorIconProxyPlugin";
-import { resolve } from 'path'
-
-const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
+import { resolve } from 'node:path'
+// Derive project root (Vite provides process.cwd())
+const projectRoot = process.env.PROJECT_ROOT || process.cwd();
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), createIconImportProxy() as PluginOption, sparkPlugin() as PluginOption],
+  // Removed spark + icon proxy plugins (not installed / production simplification)
+  plugins: [react()],
   resolve: {
     alias: {
       '@': resolve(projectRoot, 'src')

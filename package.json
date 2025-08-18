@@ -8,10 +8,12 @@
         "dev:simple": "bash ./dev.sh",
         "vite": "vite",
         "frontend": "vite",
-        "backend": "uvicorn backend.main:app --reload --port 8000",
+    "backend": "uvicorn backend.main:app --reload --port 8000",
     "connect": "node connect.mjs --mode start",
     "dev:quick": "NODE_NO_INTERACTIVE=1 node connect.mjs --mode start",
     "boot": "NODE_NO_INTERACTIVE=1 node connect.mjs --mode start",
+    "up": "NODE_NO_INTERACTIVE=1 node connect.mjs --mode start",
+    "up:full": "FAST_DEV=0 NODE_NO_INTERACTIVE=1 node connect.mjs --mode start",
         "build": "vite build",
         "preview": "vite preview",
         "setup": "bash setup.sh",
@@ -37,6 +39,7 @@
         "tailwind-merge": "^2.2.1"
     },
     "devDependencies": {
+        "@types/node": "^20.11.30",
         "@vitejs/plugin-react": "^4.2.1",
         "autoprefixer": "^10.4.18",
         "boxen": "^8.0.1",

@@ -22,19 +22,63 @@ import uvicorn
 import logging
 import asyncio
 import io
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Sequence
 import json
 from datetime import datetime, timedelta
 import os
 from pathlib import Path
 
-# Import custom modules
-missing_optional = []
+# ----------------------------------------------------------------------------------
+# Environment & Logging Setup
+# ----------------------------------------------------------------------------------
+ENV = os.getenv("ENV", "development").lower()
+FAST_DEV = os.getenv("FAST_DEV") == "1"
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
+def _configure_logging():
+    """Configure structured logging in production, plain logging in development."""
+    # Avoid reconfiguration if already set
+    if logging.getLogger().handlers:
+        return
+    if ENV == "production":
+        try:
+            import structlog  # type: ignore
+
+            logging.basicConfig(
+                level=LOG_LEVEL,
+                format="%(message)s",
+                handlers=[logging.StreamHandler()]
+            )
+            structlog.configure(
+                processors=[
+                    structlog.processors.TimeStamper(fmt="iso"),
+                    structlog.processors.add_log_level,
+                    structlog.processors.StackInfoRenderer(),
+                    structlog.processors.format_exc_info,
+                    structlog.processors.JSONRenderer()
+                ],
+                wrapper_class=structlog.make_filtering_bound_logger(getattr(logging, LOG_LEVEL, logging.INFO)),
+                cache_logger_on_first_use=True,
+            )
+        except Exception:  # pragma: no cover - best effort
+            logging.basicConfig(level=LOG_LEVEL)
+    else:
+        logging.basicConfig(
+            level=LOG_LEVEL,
+            format="[%(levelname)s] %(asctime)s %(name)s: %(message)s"
+        )
+
+_configure_logging()
+
+logger = logging.getLogger(__name__)
+
+# Import custom modules (development tolerant, production fail-fast)
+missing_optional: list[str] = []
 def _opt_import(path, name=None):
     try:
         mod = __import__(path, fromlist=['*'])
         return mod if name is None else getattr(mod, name)
-    except Exception as e:  # pragma: no cover
+    except Exception as e:  # pragma: no cover - dev convenience
         missing_optional.append(f"{path}{'.'+name if name else ''}: {e}")
         return None
 
@@ -58,13 +102,42 @@ WebSocketManager = _opt_import('core.websocket_manager', 'WebSocketManager') or 
 verify_api_key = _opt_import('core.security', 'verify_api_key') or (lambda : lambda : True)
 RateLimitingMiddleware = _opt_import('middleware.rate_limiting', 'RateLimitingMiddleware') or (lambda *a, **k: None)
 PrometheusMiddleware = _opt_import('middleware.monitoring', 'PrometheusMiddleware') or (lambda *a, **k: None)
-AIOrchestrator = _opt_import('services.ai_orchestrator', 'AIOrchestrator') or (lambda : type('AIO', (), {'initialize':lambda self: None,'cleanup':lambda self: None,'health_check':lambda self:'healthy','create_project':lambda self, **k:'proj','generate_full_song':lambda self, **k: None,'get_total_songs':lambda self:0,'get_performance_metrics':lambda self:{}}))
-AudioEngine = _opt_import('services.audio_engine', 'AudioEngine') or (lambda : type('AE', (), {'initialize':lambda self: None,'cleanup':lambda self: None,'health_check':lambda self:'healthy','get_queue_size':lambda self:0}))
-BlockchainService = _opt_import('services.blockchain_service', 'BlockchainService') or (lambda : type('BC', (), {'initialize':lambda self: None,'cleanup':lambda self: None,'health_check':lambda self:'healthy','get_transaction_count':lambda self:0}))
+AIOrchestrator = _opt_import('services.ai_orchestrator', 'AIOrchestrator')
+AudioEngine = _opt_import('services.audio_engine', 'AudioEngine')
+BlockchainService = _opt_import('services.blockchain_service', 'BlockchainService')
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+class _AsyncStub:
+    async def initialize(self): pass
+    async def cleanup(self): pass
+    async def health_check(self): return 'healthy'
+
+class _AIStub(_AsyncStub):
+    async def create_project(self, **k): return 'proj'
+    async def generate_full_song(self, **k): return None
+    async def get_total_songs(self): return 0
+    async def get_performance_metrics(self): return {}
+
+class _AudioStub(_AsyncStub):
+    async def get_queue_size(self): return 0
+
+class _BCStub(_AsyncStub):
+    async def get_transaction_count(self): return 0
+
+if AIOrchestrator is None:
+    AIOrchestrator = _AIStub  # type: ignore
+if AudioEngine is None:
+    AudioEngine = _AudioStub  # type: ignore
+if BlockchainService is None:
+    BlockchainService = _BCStub  # type: ignore
+
+if ENV == "production" and missing_optional:
+    # Fail fast with explicit module list
+    raise RuntimeError(
+        "Missing required modules in production mode: " + ", ".join(missing_optional)
+    )
+
+if FAST_DEV and ENV == "production":  # Guard against misconfiguration
+    logger.warning("FAST_DEV=1 ignored in production environment")
 
 # Global instances
 websocket_manager = WebSocketManager()
@@ -75,8 +148,8 @@ blockchain_service = BlockchainService()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager (FAST_DEV tolerant)."""
-    logger.info("🚀 Starting Million-Dollar AI Music Generation System...")
-    fast_dev = os.environ.get("FAST_DEV") == "1"
+    logger.info("🚀 Starting Million-Dollar AI Music Generation System...", extra={"env": ENV, "fast_dev": FAST_DEV})
+    fast_dev = FAST_DEV
 
     async def safe(label: str, coro):
         try:
@@ -133,24 +206,35 @@ app.add_middleware(
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-app.add_middleware(RateLimitingMiddleware)
-app.add_middleware(PrometheusMiddleware)
+if callable(RateLimitingMiddleware):  # guard placeholder
+    app.add_middleware(RateLimitingMiddleware)
+if callable(PrometheusMiddleware):
+    app.add_middleware(PrometheusMiddleware)
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/audio", StaticFiles(directory="generated_audio"), name="audio")
+# Mount static & frontend build (if present)
+if Path("static").exists():
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+if Path("generated_audio").exists():
+    app.mount("/audio", StaticFiles(directory="generated_audio"), name="audio")
+if Path("dist").exists():  # built frontend assets
+    app.mount("/", StaticFiles(directory="dist", html=True), name="frontend")
 
-# Include routers
-app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
-app.include_router(music_generation_router, prefix="/api/v1/music", tags=["Music Generation"])
-app.include_router(projects_router, prefix="/api/v1/projects", tags=["Projects"])
-app.include_router(collaboration_router, prefix="/api/v1/collaboration", tags=["Collaboration"])
-app.include_router(marketplace_router, prefix="/api/v1/marketplace", tags=["Marketplace"])
-app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["Analytics"])
-app.include_router(enterprise_router, prefix="/api/v1/enterprise", tags=["Enterprise"])
-app.include_router(nft_router, prefix="/api/v1/nft", tags=["NFT & Blockchain"])
-app.include_router(payments_router, prefix="/api/v1/payments", tags=["Payments"])
-app.include_router(collab_lab_router, prefix="/api/v1/collab-lab", tags=["Collab Lab"])
+def _add_router(router, prefix: str, tags: Sequence[str]):  # Helper to avoid None errors in FAST_DEV
+    if router is None:
+        logger.warning(f"Skipping router {prefix} (module missing)")
+    else:
+        app.include_router(router, prefix=prefix, tags=tags)
+
+_add_router(auth_router, "/api/v1/auth", ["Authentication"])
+_add_router(music_generation_router, "/api/v1/music", ["Music Generation"])
+_add_router(projects_router, "/api/v1/projects", ["Projects"])
+_add_router(collaboration_router, "/api/v1/collaboration", ["Collaboration"])
+_add_router(marketplace_router, "/api/v1/marketplace", ["Marketplace"])
+_add_router(analytics_router, "/api/v1/analytics", ["Analytics"])
+_add_router(enterprise_router, "/api/v1/enterprise", ["Enterprise"])
+_add_router(nft_router, "/api/v1/nft", ["NFT & Blockchain"])
+_add_router(payments_router, "/api/v1/payments", ["Payments"])
+_add_router(collab_lab_router, "/api/v1/collab-lab", ["Collab Lab"])
 
 @app.get("/")
 async def root():
@@ -235,6 +319,16 @@ async def health_check():
             "error": str(e),
             "timestamp": datetime.utcnow().isoformat()
         }
+
+@app.get("/health/ready")
+async def readiness_probe():
+    """Readiness probe (strict) for orchestrators / load balancers.
+    Returns 200 only if all core services are healthy.
+    """
+    result = await health_check()  # reuse logic; may return dict
+    if isinstance(result, dict) and result.get("status") == "healthy":
+        return {"status": "ready", "timestamp": datetime.utcnow().isoformat()}
+    raise HTTPException(status_code=503, detail="not ready")
 
 @app.get("/metrics")
 async def metrics():
@@ -410,8 +504,8 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True,
-        workers=1,
-        log_level="info"
+        port=int(os.getenv("PORT", 8000)),
+        reload=ENV != "production",
+        workers=int(os.getenv("WORKERS", "1")),
+        log_level=LOG_LEVEL.lower(),
     )
