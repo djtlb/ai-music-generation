@@ -16,13 +16,12 @@ from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, WebSocket,
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from contextlib import asynccontextmanager
 import uvicorn
 import logging
-import asyncio
 import io
-from typing import List, Dict, Any, Optional, Sequence
+from typing import Sequence
 import json
 from datetime import datetime, timedelta
 import os
@@ -94,14 +93,15 @@ enterprise_router = _opt_import('api.routes', 'enterprise_router')
 nft_router = _opt_import('api.routes', 'nft_router')
 payments_router = _opt_import('api.routes', 'payments_router')
 collab_lab_router = _opt_import('api.routes.collab_router', 'router')
+dev_router = _opt_import('api.routes.dev', 'router')
 
-init_db = _opt_import('core.database', 'init_db') or (lambda : None)
-get_db_session = _opt_import('core.database', 'get_db_session') or (lambda : None)
-get_redis_client = _opt_import('core.redis_client', 'get_redis_client') or (lambda : None)
-WebSocketManager = _opt_import('core.websocket_manager', 'WebSocketManager') or (lambda : type('WS', (), {'__init__':lambda self: None}) )
+init_db = _opt_import('core.database', 'init_db')
+get_db_session = _opt_import('core.database', 'get_db_session')
+get_redis_client = _opt_import('core.redis_client', 'get_redis_client')
+WebSocketManager = _opt_import('core.websocket_manager', 'WebSocketManager')
 verify_api_key = _opt_import('core.security', 'verify_api_key') or (lambda : lambda : True)
-RateLimitingMiddleware = _opt_import('middleware.rate_limiting', 'RateLimitingMiddleware') or (lambda *a, **k: None)
-PrometheusMiddleware = _opt_import('middleware.monitoring', 'PrometheusMiddleware') or (lambda *a, **k: None)
+RateLimitingMiddleware = _opt_import('middleware.rate_limiting', 'RateLimitingMiddleware')
+PrometheusMiddleware = _opt_import('middleware.monitoring', 'PrometheusMiddleware')
 AIOrchestrator = _opt_import('services.ai_orchestrator', 'AIOrchestrator')
 AudioEngine = _opt_import('services.audio_engine', 'AudioEngine')
 BlockchainService = _opt_import('services.blockchain_service', 'BlockchainService')
@@ -140,7 +140,16 @@ if FAST_DEV and ENV == "production":  # Guard against misconfiguration
     logger.warning("FAST_DEV=1 ignored in production environment")
 
 # Global instances
-websocket_manager = WebSocketManager()
+if WebSocketManager is None:
+    class _WSStub:
+        async def connect(self, *a, **k): pass
+        async def send_personal_message(self, *a, **k): pass
+        async def subscribe(self, *a, **k): pass
+        async def unsubscribe(self, *a, **k): pass
+        def disconnect(self, *a, **k): pass
+    websocket_manager = _WSStub()
+else:
+    websocket_manager = WebSocketManager()
 ai_orchestrator = AIOrchestrator()
 audio_engine = AudioEngine()
 blockchain_service = BlockchainService()
@@ -162,16 +171,18 @@ async def lifespan(app: FastAPI):
                 raise
 
     # Init components
-    await safe("Database initialized", init_db())
-    try:
-        redis_client = await get_redis_client()
-        await redis_client.ping()
-        logger.info("✅ Redis connection established")
-    except Exception as e:
-        if fast_dev:
-            logger.warning(f"⚠️ FAST_DEV Redis unavailable: {e}")
-        else:
-            raise
+    if init_db is not None:
+        await safe("Database initialized", init_db())
+    if get_redis_client is not None:
+        try:
+            redis_client = await get_redis_client()
+            await redis_client.ping()
+            logger.info("✅ Redis connection established")
+        except Exception as e:
+            if fast_dev:
+                logger.warning(f"⚠️ FAST_DEV Redis unavailable: {e}")
+            else:
+                raise
     await safe("AI models loaded", ai_orchestrator.initialize())
     await safe("Audio engine ready", audio_engine.initialize())
     await safe("Blockchain service connected", blockchain_service.initialize())
@@ -206,10 +217,19 @@ app.add_middleware(
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-if callable(RateLimitingMiddleware):  # guard placeholder
-    app.add_middleware(RateLimitingMiddleware)
-if callable(PrometheusMiddleware):
-    app.add_middleware(PrometheusMiddleware)
+
+class _NoopMiddleware:
+    def __init__(self, app):
+        self.app = app
+    async def __call__(self, scope, receive, send):
+        await self.app(scope, receive, send)
+
+if not isinstance(RateLimitingMiddleware, type):
+    RateLimitingMiddleware = _NoopMiddleware  # type: ignore
+if not isinstance(PrometheusMiddleware, type):
+    PrometheusMiddleware = _NoopMiddleware  # type: ignore
+app.add_middleware(RateLimitingMiddleware)
+app.add_middleware(PrometheusMiddleware)
 
 # Mount static & frontend build (if present)
 if Path("static").exists():
@@ -222,8 +242,8 @@ if Path("dist").exists():  # built frontend assets
 def _add_router(router, prefix: str, tags: Sequence[str]):  # Helper to avoid None errors in FAST_DEV
     if router is None:
         logger.warning(f"Skipping router {prefix} (module missing)")
-    else:
-        app.include_router(router, prefix=prefix, tags=tags)
+        return
+    app.include_router(router, prefix=prefix, tags=list(tags))
 
 _add_router(auth_router, "/api/v1/auth", ["Authentication"])
 _add_router(music_generation_router, "/api/v1/music", ["Music Generation"])
@@ -235,6 +255,8 @@ _add_router(enterprise_router, "/api/v1/enterprise", ["Enterprise"])
 _add_router(nft_router, "/api/v1/nft", ["NFT & Blockchain"])
 _add_router(payments_router, "/api/v1/payments", ["Payments"])
 _add_router(collab_lab_router, "/api/v1/collab-lab", ["Collab Lab"])
+if ENV != "production":
+    _add_router(dev_router, "/api/v1/dev", ["Development"])
 
 @app.get("/")
 async def root():
@@ -266,21 +288,34 @@ async def health_check():
     """Comprehensive health check"""
     try:
         # Check database
-        db_status = "healthy"
-        try:
-            db_session = await get_db_session()
-            await db_session.execute("SELECT 1")
-            await db_session.close()
-        except Exception as e:
-            db_status = f"unhealthy: {str(e)}"
+        if get_db_session is None:
+            db_status = "unknown"
+        else:
+            db_status = "healthy"
+            try:
+                gen = get_db_session()
+                session = None
+                if hasattr(gen, "__anext__"):
+                    session = await gen.__anext__()
+                else:
+                    session = await gen  # type: ignore
+                if hasattr(session, "execute"):
+                    await session.execute("SELECT 1")
+                if hasattr(session, "close"):
+                    await session.close()
+            except Exception as e:
+                db_status = f"unhealthy: {str(e)}"
         
         # Check Redis
-        redis_status = "healthy"
-        try:
-            redis_client = await get_redis_client()
-            await redis_client.ping()
-        except Exception as e:
-            redis_status = f"unhealthy: {str(e)}"
+        if get_redis_client is None:
+            redis_status = "unknown"
+        else:
+            redis_status = "healthy"
+            try:
+                redis_client = await get_redis_client()
+                await redis_client.ping()
+            except Exception as e:
+                redis_status = f"unhealthy: {str(e)}"
         
         # Check AI services
         ai_status = await ai_orchestrator.health_check()
@@ -333,11 +368,11 @@ async def readiness_probe():
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint"""
-    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-    return StreamingResponse(
-        io.BytesIO(generate_latest()),
-        media_type=CONTENT_TYPE_LATEST
-    )
+    try:
+        from prometheus_client import generate_latest, CONTENT_TYPE_LATEST  # type: ignore
+    except Exception:
+        raise HTTPException(status_code=503, detail="prometheus_client not installed")
+    return StreamingResponse(io.BytesIO(generate_latest()), media_type=CONTENT_TYPE_LATEST)
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):

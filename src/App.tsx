@@ -6,9 +6,12 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Toaster, toast } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from 'sonner';
 import { useKV } from "@/hooks/useKV";
-import { Music, Wand2, Play, Pause, Download, Loader2, Clock, CheckCircle2, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { Music, Wand2, Play, Pause, Download, Loader2, Clock, CheckCircle2, Sparkles, Volume2, VolumeX, Server } from "lucide-react";
+import { useBackendHealth } from "@/hooks/useBackendHealth";
+import { useProjectWebSocket } from "@/hooks/useProjectWebSocket";
 
 // Types for the music generation system
 interface GeneratedSong {
@@ -34,7 +37,7 @@ interface GeneratedSong {
   };
 }
 
-// Mock AI music generation service
+// Mock AI music generation service (kept for fallback if backend offline)
 class AIMusicalService {
   private async delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -163,8 +166,79 @@ function App() {
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const aiService = useRef(new AIMusicalService());
+  const [backendProjectId, setBackendProjectId] = useState<string | null>(null);
+  const [backendMode, setBackendMode] = useState<boolean>(false);
+  const [backendStatus, setBackendStatus] = useState<any>(null);
+  const backendStatusTimer = useRef<number | null>(null);
+
+  // Lazy import to avoid breaking build if file missing
+  // (will be tree-shaken if present)
+  let generateFullSongBackend: any = null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    generateFullSongBackend = require('./lib/api.ts').generateFullSongBackend;
+  // eslint-disable-next-line no-empty
+  } catch {}
+
+  const stopStatusPolling = () => {
+    if (backendStatusTimer.current) {
+      window.clearTimeout(backendStatusTimer.current);
+      backendStatusTimer.current = null;
+    }
+  };
+
+  const pollBackendStatus = useCallback(async (projectId: string) => {
+    const API_BASE: string = (import.meta.env.VITE_API_BASE as string) || '';
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/music/project/${projectId}/status`);
+      if (res.ok) {
+        const json = await res.json();
+        setBackendStatus(json);
+        // naive completion detection
+        if (json.status === 'completed' || json.status === 'failed') {
+          stopStatusPolling();
+        } else {
+          backendStatusTimer.current = window.setTimeout(() => pollBackendStatus(projectId), 2000);
+        }
+      } else {
+        // stop on repeated errors
+        stopStatusPolling();
+      }
+    } catch (e) {
+      stopStatusPolling();
+    }
+  }, []);
+
+  // WebSocket for stage updates when backend mode active
+  useProjectWebSocket({
+    userId: backendMode ? 'demo-user' : null,
+    enabled: backendMode,
+    onEvent: (evt) => {
+      if (evt.type === 'event_notification') {
+        if (evt.event_type === 'stage.completed' && backendStatus) {
+          const stage = evt.data.stage;
+          setBackendStatus((prev: any) => {
+            if (!prev) return prev;
+            const stages = { ...(prev.stages || {}), [stage]: true };
+            const total = Object.keys(stages).length;
+            const completed = Object.values(stages).filter(Boolean).length;
+            return { ...prev, stages, progress: Math.round((completed/ total) * 100) };
+          });
+        } else if (evt.event_type === 'project.completed') {
+          setBackendStatus((prev: any) => prev ? { ...prev, status: 'completed', progress: 100 } : prev);
+          stopStatusPolling();
+        } else if (evt.event_type === 'project.failed') {
+          setBackendStatus((prev: any) => prev ? { ...prev, status: 'failed' } : prev);
+          stopStatusPolling();
+        }
+      }
+    }
+  });
 
   // Generate music function
+  // Backend health (must be declared before use in callbacks)
+  const { health, loading: healthLoading, error: healthError } = useBackendHealth(8000);
+
   const generateMusic = useCallback(async () => {
     if (!lyricsPrompt.trim() && !genrePrompt.trim()) {
       toast.error("Please enter both lyrics and genre prompts");
@@ -174,21 +248,42 @@ function App() {
     setIsGenerating(true);
     setCurrentProgress(0);
     setCurrentStage("Initializing...");
+    setBackendStatus(null);
+    setBackendProjectId(null);
     
     try {
-      const song = await aiService.current.generateFullSong(
-        lyricsPrompt || "Create uplifting lyrics about hope and dreams",
-        genrePrompt || "Pop ballad with emotional depth and modern production",
-        (progress, stage) => {
-          setCurrentProgress(progress);
-          setCurrentStage(stage);
+      // Prefer backend if health is good and client module present
+      const backendHealthy = health?.status === 'healthy' && generateFullSongBackend;
+      if (backendHealthy) {
+        setBackendMode(true);
+        setCurrentStage('Requesting backend generation...');
+        const resp = await generateFullSongBackend({
+          projectName: lyricsPrompt.slice(0, 24) || 'Untitled Song',
+          lyricsPrompt,
+          genrePrompt
+        });
+        setBackendProjectId(resp.project_id);
+        setCurrentStage('Backend accepted job');
+        setCurrentProgress(5);
+        // Start polling (temporary until websocket integration)
+        if (resp.project_id) {
+          pollBackendStatus(resp.project_id);
         }
-      );
-      
-      setCurrentSong(song);
-      setSongHistory(prev => [song, ...prev.slice(0, 9)]); // Keep last 10 songs
-      
-      toast.success("Song generated successfully!");
+        toast.success('Backend generation started');
+      } else {
+        setBackendMode(false);
+        const song = await aiService.current.generateFullSong(
+          lyricsPrompt || "Create uplifting lyrics about hope and dreams",
+          genrePrompt || "Pop ballad with emotional depth and modern production",
+          (progress: number, stage: string) => {
+            setCurrentProgress(progress);
+            setCurrentStage(stage);
+          }
+        );
+        setCurrentSong(song);
+        setSongHistory(prev => [song, ...prev.slice(0, 9)]); // Keep last 10 songs
+        toast.success("Song generated successfully!");
+      }
       
     } catch (error) {
       toast.error(`Generation failed: ${error}`);
@@ -198,7 +293,7 @@ function App() {
       setCurrentProgress(0);
       setCurrentStage("");
     }
-  }, [lyricsPrompt, genrePrompt, setSongHistory]);
+  }, [lyricsPrompt, genrePrompt, setSongHistory, health, pollBackendStatus]);
 
   // Audio control functions
   const togglePlayback = useCallback(() => {
@@ -272,6 +367,16 @@ function App() {
     </div>
   );
 
+  // (moved above to satisfy linter)
+
+  const healthBadge = () => {
+    if (healthLoading) return <span className="text-xs px-2 py-1 rounded bg-muted">checking...</span>;
+    if (healthError) return <span className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">offline</span>;
+    if (!health) return null;
+    const ok = health.status === 'healthy';
+    return <span className={`text-xs px-2 py-1 rounded ${ok? 'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-800'}`}>{health.status}</span>;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       <div className="container mx-auto px-6 py-8">
@@ -282,6 +387,12 @@ function App() {
               <Music className="w-8 h-8 text-primary" />
             </div>
             <h1 className="text-4xl font-bold tracking-tight">AI Music Composer</h1>
+          </div>
+          <div className="flex items-center justify-center gap-3 mb-4 text-sm">
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Server className="w-4 h-4" /> Backend {healthBadge()}
+              {health?.version && <span className="ml-2 text-xs text-muted-foreground/70">v{health.version}</span>}
+            </div>
           </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Transform your creative vision into professional music with AI-powered composition, arrangement, and production
@@ -391,7 +502,16 @@ function App() {
                         </div>
                         <Progress value={currentProgress} className="w-full" />
                         <p className="text-sm text-muted-foreground">{currentStage}</p>
+                        {backendMode && backendProjectId && (
+                          <p className="text-xs text-muted-foreground">Backend Project: {backendProjectId}</p>
+                        )}
                       </div>
+                    </div>
+                  )}
+                  {backendMode && backendStatus && !isGenerating && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Backend Status: {backendStatus.status}</p>
+                      <pre className="text-xs bg-muted p-2 rounded max-h-40 overflow-auto">{JSON.stringify(backendStatus, null, 2)}</pre>
                     </div>
                   )}
 
