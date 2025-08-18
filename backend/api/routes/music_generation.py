@@ -7,15 +7,12 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, UploadFi
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
-from datetime import datetime
-import asyncio
 import logging
 
-from core.security import get_current_user, verify_api_key, check_subscription_tier
+from core.security import get_current_user, check_subscription_tier
 from services.ai_orchestrator import get_ai_orchestrator
-from services.audio_engine import get_audio_engine
-from core.websocket_manager import WebSocketManager
-from core.redis_client import cache
+from services.audio_engine import get_audio_engine  # type: ignore
+from core.redis_client import cache  # runtime-provided client (may be stubbed)
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +96,12 @@ async def generate_lyrics(
         
         # Update rate limit
         await cache.increment(cache_key)
-        await cache.client.expire(cache_key, 3600)  # 1 hour expiry
+        # cache.client may be a redis instance; ignore type checker if abstraction differs
+        if getattr(cache, 'client', None):  # lightweight safety
+            try:
+                await cache.client.expire(cache_key, 3600)  # type: ignore[attr-defined]
+            except Exception:
+                pass  # non-fatal
         
         return {
             "task_id": task_id,
@@ -321,6 +323,39 @@ async def get_task_status(
         logger.error(f"Task status error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/project/{project_id}/status")
+async def get_project_status(
+    project_id: str,
+    current_user: dict = Depends(get_current_user),
+    ai_orchestrator = Depends(get_ai_orchestrator)
+):
+    """Get aggregated status/progress of a project"""
+    try:
+        project = await ai_orchestrator.get_project_status(project_id)
+        if project.get("status") == "not_found":
+            raise HTTPException(status_code=404, detail="Project not found")
+        # Derive progress if not already set
+        stages = project.get("stages", {})
+        total = len(stages) if stages else 0
+        completed = sum(1 for v in stages.values() if v)
+        progress = project.get("progress")
+        if progress is None and total:
+            progress = int((completed / total) * 100)
+        return {
+            "project_id": project_id,
+            "name": project.get("name"),
+            "status": project.get("status"),
+            "created_at": project.get("created_at"),
+            "completed_at": project.get("completed_at"),
+            "stages": {k: (v is not None) for k, v in stages.items()},
+            "progress": progress or 0
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Project status error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/download/{file_id}")
 async def download_file(
     file_id: str,
@@ -354,15 +389,15 @@ async def upload_reference_audio(
     try:
         if file.content_type not in ["audio/wav", "audio/mp3", "audio/flac"]:
             raise HTTPException(status_code=400, detail="Invalid audio format")
-        
-        if file.size > 50 * 1024 * 1024:  # 50MB limit
+        size_val = getattr(file, 'size', None)
+        if isinstance(size_val, int) and size_val > 50 * 1024 * 1024:  # 50MB limit (size may be None in some frameworks)
             raise HTTPException(status_code=400, detail="File too large")
-        
+
         file_id = await audio_engine.save_reference_audio(
             file=file,
             user_id=current_user["user_id"]
         )
-        
+
         return {
             "file_id": file_id,
             "message": "Reference audio uploaded successfully",

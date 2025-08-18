@@ -4,10 +4,9 @@ AI Orchestrator Service - The brain of the music generation system
 
 import asyncio
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Optional, List
 from datetime import datetime
 import uuid
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -166,18 +165,26 @@ class AIOrchestrator:
     
     async def generate_full_song_pipeline(self, project_id: str, style_config: Dict,
                                         lyrics_request: Optional[Dict], advanced_options: Dict,
-                                        user_id: str, collaboration_enabled: bool = False):
+                                        user_id: str, collaboration_enabled: bool = False,
+                                        websocket_manager=None):
         """
         🎵 THE MILLION-DOLLAR PIPELINE 🎵
         This is the complete end-to-end song generation pipeline
         """
+        async def push(event_type: str, data: Dict):
+            if websocket_manager is not None:
+                try:
+                    await websocket_manager.notify_subscribers(event_type, data)  # type: ignore[attr-defined]
+                except Exception:
+                    pass
+
         try:
             logger.info(f"Starting FULL SONG PIPELINE for project {project_id}")
-            
+
             project = self.projects.get(project_id)
             if not project:
                 raise Exception("Project not found")
-            
+
             # Stage 1: Lyrics Generation
             if lyrics_request:
                 lyrics_task = await self.generate_lyrics(
@@ -194,6 +201,7 @@ class AIOrchestrator:
                 
                 if self.tasks[lyrics_task]["status"] == "completed":
                     project["stages"]["lyrics"] = self.tasks[lyrics_task]["result"]
+                    await push("stage.completed", {"project_id": project_id, "stage": "lyrics"})
             
             # Stage 2: Arrangement
             arrangement_task = await self.generate_arrangement(
@@ -208,6 +216,7 @@ class AIOrchestrator:
             
             if self.tasks[arrangement_task]["status"] == "completed":
                 project["stages"]["arrangement"] = self.tasks[arrangement_task]["result"]
+                await push("stage.completed", {"project_id": project_id, "stage": "arrangement"})
             
             # Stage 3: Composition (Mock)
             await asyncio.sleep(2)
@@ -217,6 +226,7 @@ class AIOrchestrator:
                 "midi_data": "mock_midi_data",
                 "created_at": datetime.utcnow().isoformat()
             }
+            await push("stage.completed", {"project_id": project_id, "stage": "composition"})
             
             # Stage 4: Sound Design (Mock)
             await asyncio.sleep(1.5)
@@ -226,6 +236,7 @@ class AIOrchestrator:
                 "effects": ["reverb", "eq", "compression"],
                 "created_at": datetime.utcnow().isoformat()
             }
+            await push("stage.completed", {"project_id": project_id, "stage": "sound_design"})
             
             # Stage 5: Mix & Master (Mock)
             await asyncio.sleep(2)
@@ -236,17 +247,25 @@ class AIOrchestrator:
                 "mastering_settings": {"lufs": -14, "dynamic_range": "medium"},
                 "created_at": datetime.utcnow().isoformat()
             }
+            await push("stage.completed", {"project_id": project_id, "stage": "mix_master"})
             
             # Update project status
             project["status"] = "completed"
             project["completed_at"] = datetime.utcnow().isoformat()
             
+            await push("project.completed", {"project_id": project_id})
             logger.info(f"🎉 MILLION-DOLLAR SONG COMPLETED: {project_id}")
             
         except Exception as e:
             logger.error(f"Pipeline failed for project {project_id}: {str(e)}")
-            project["status"] = "failed"
-            project["error"] = str(e)
+            project_obj = self.projects.get(project_id)
+            if project_obj is not None:
+                project_obj["status"] = "failed"
+                project_obj["error"] = str(e)
+            try:
+                await push("project.failed", {"project_id": project_id, "error": str(e)})
+            except Exception:
+                pass
     
     async def get_task_status(self, task_id: str) -> Dict:
         """Get status of a specific task"""
