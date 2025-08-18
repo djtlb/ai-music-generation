@@ -21,6 +21,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 import logging
 import asyncio
+import io
 from typing import List, Dict, Any, Optional
 import json
 from datetime import datetime, timedelta
@@ -40,6 +41,7 @@ from api.routes import (
     nft_router,
     payments_router
 )
+from api.routes.collab_router import router as collab_lab_router
 from core.database import init_db, get_db_session
 from core.redis_client import get_redis_client
 from core.websocket_manager import WebSocketManager
@@ -135,6 +137,7 @@ app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["Analytic
 app.include_router(enterprise_router, prefix="/api/v1/enterprise", tags=["Enterprise"])
 app.include_router(nft_router, prefix="/api/v1/nft", tags=["NFT & Blockchain"])
 app.include_router(payments_router, prefix="/api/v1/payments", tags=["Payments"])
+app.include_router(collab_lab_router, prefix="/api/v1/collab-lab", tags=["Collab Lab"])
 
 @app.get("/")
 async def root():
