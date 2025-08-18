@@ -174,9 +174,12 @@ function App() {
   // Lazy import to avoid breaking build if file missing
   // (will be tree-shaken if present)
   let generateFullSongBackend: any = null;
+  let fetchProjectAggregate: any = null;
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    generateFullSongBackend = require('./lib/api.ts').generateFullSongBackend;
+    const apiLib = require('./lib/api.ts');
+    generateFullSongBackend = apiLib.generateFullSongBackend;
+    fetchProjectAggregate = apiLib.fetchProjectAggregate;
   // eslint-disable-next-line no-empty
   } catch {}
 
@@ -267,6 +270,10 @@ function App() {
         setCurrentProgress(5);
         // Start polling (temporary until websocket integration)
         if (resp.project_id) {
+          // Kick off initial aggregate fetch
+          if (fetchProjectAggregate) {
+            try { const agg = await fetchProjectAggregate(resp.project_id); setBackendStatus(agg); } catch {}
+          }
           pollBackendStatus(resp.project_id);
         }
         toast.success('Backend generation started');
@@ -508,10 +515,10 @@ function App() {
                       </div>
                     </div>
                   )}
-                  {backendMode && backendStatus && !isGenerating && (
+          {backendMode && backendStatus && !isGenerating && (
                     <div className="space-y-2">
                       <p className="text-sm font-medium">Backend Status: {backendStatus.status}</p>
-                      <pre className="text-xs bg-muted p-2 rounded max-h-40 overflow-auto">{JSON.stringify(backendStatus, null, 2)}</pre>
+            <pre className="text-xs bg-muted p-2 rounded max-h-72 overflow-auto">{JSON.stringify(backendStatus, null, 2)}</pre>
                     </div>
                   )}
 

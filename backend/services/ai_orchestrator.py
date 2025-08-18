@@ -49,7 +49,9 @@ class AIOrchestrator:
                 "composition": None,
                 "sound_design": None,
                 "mix_master": None
-            }
+            },
+            "stage_meta": {},  # stage -> {start, end, status, duration_sec, progress}
+            "progress": 0
         }
         
         logger.info(f"Created project {project_id} for user {user_id}")
@@ -185,8 +187,41 @@ class AIOrchestrator:
             if not project:
                 raise Exception("Project not found")
 
+            def stage_start(stage: str):
+                meta = project.setdefault("stage_meta", {})
+                meta[stage] = {
+                    "start": datetime.utcnow().isoformat(),
+                    "end": None,
+                    "status": "in_progress",
+                    "duration_sec": None,
+                    "progress": 0
+                }
+
+            def stage_complete(stage: str):
+                meta = project.get("stage_meta", {}).get(stage)
+                if meta and not meta.get("end"):
+                    meta["end"] = datetime.utcnow().isoformat()
+                    # compute duration
+                    try:
+                        start_dt = datetime.fromisoformat(meta["start"])
+                        end_dt = datetime.fromisoformat(meta["end"])
+                        meta["duration_sec"] = (end_dt - start_dt).total_seconds()
+                    except Exception:
+                        pass
+                    meta["status"] = "completed"
+                    meta["progress"] = 100
+                self._recompute_project_progress(project)
+
+            async def push_stage_progress(stage: str, value: int):
+                meta = project.get("stage_meta", {}).get(stage)
+                if meta:
+                    meta["progress"] = value
+                self._recompute_project_progress(project)
+                await push("stage.progress", {"project_id": project_id, "stage": stage, "progress": value, "project_progress": project.get("progress")})
+
             # Stage 1: Lyrics Generation
             if lyrics_request:
+                stage_start("lyrics")
                 lyrics_task = await self.generate_lyrics(
                     theme=lyrics_request.get("theme", "music"),
                     style=lyrics_request.get("style", "pop"),
@@ -197,13 +232,17 @@ class AIOrchestrator:
                 )
                 # Wait for completion
                 while self.tasks[lyrics_task]["status"] == "processing":
+                    # map task progress to stage progress
+                    await push_stage_progress("lyrics", self.tasks[lyrics_task].get("progress", 0))
                     await asyncio.sleep(1)
                 
                 if self.tasks[lyrics_task]["status"] == "completed":
                     project["stages"]["lyrics"] = self.tasks[lyrics_task]["result"]
-                    await push("stage.completed", {"project_id": project_id, "stage": "lyrics"})
+                    stage_complete("lyrics")
+                    await push("stage.completed", {"project_id": project_id, "stage": "lyrics", "project_progress": project.get("progress")})
             
             # Stage 2: Arrangement
+            stage_start("arrangement")
             arrangement_task = await self.generate_arrangement(
                 style_config=style_config,
                 duration=180,
@@ -212,13 +251,16 @@ class AIOrchestrator:
                 user_id=user_id
             )
             while self.tasks[arrangement_task]["status"] == "processing":
+                await push_stage_progress("arrangement", self.tasks[arrangement_task].get("progress", 0))
                 await asyncio.sleep(1)
             
             if self.tasks[arrangement_task]["status"] == "completed":
                 project["stages"]["arrangement"] = self.tasks[arrangement_task]["result"]
-                await push("stage.completed", {"project_id": project_id, "stage": "arrangement"})
+                stage_complete("arrangement")
+                await push("stage.completed", {"project_id": project_id, "stage": "arrangement", "project_progress": project.get("progress")})
             
             # Stage 3: Composition (Mock)
+            stage_start("composition")
             await asyncio.sleep(2)
             project["stages"]["composition"] = {
                 "id": str(uuid.uuid4()),
@@ -226,9 +268,11 @@ class AIOrchestrator:
                 "midi_data": "mock_midi_data",
                 "created_at": datetime.utcnow().isoformat()
             }
-            await push("stage.completed", {"project_id": project_id, "stage": "composition"})
+            stage_complete("composition")
+            await push("stage.completed", {"project_id": project_id, "stage": "composition", "project_progress": project.get("progress")})
             
             # Stage 4: Sound Design (Mock)
+            stage_start("sound_design")
             await asyncio.sleep(1.5)
             project["stages"]["sound_design"] = {
                 "id": str(uuid.uuid4()),
@@ -236,9 +280,11 @@ class AIOrchestrator:
                 "effects": ["reverb", "eq", "compression"],
                 "created_at": datetime.utcnow().isoformat()
             }
-            await push("stage.completed", {"project_id": project_id, "stage": "sound_design"})
+            stage_complete("sound_design")
+            await push("stage.completed", {"project_id": project_id, "stage": "sound_design", "project_progress": project.get("progress")})
             
             # Stage 5: Mix & Master (Mock)
+            stage_start("mix_master")
             await asyncio.sleep(2)
             project["stages"]["mix_master"] = {
                 "id": str(uuid.uuid4()),
@@ -247,15 +293,17 @@ class AIOrchestrator:
                 "mastering_settings": {"lufs": -14, "dynamic_range": "medium"},
                 "created_at": datetime.utcnow().isoformat()
             }
-            await push("stage.completed", {"project_id": project_id, "stage": "mix_master"})
+            stage_complete("mix_master")
+            await push("stage.completed", {"project_id": project_id, "stage": "mix_master", "project_progress": project.get("progress")})
             
             # Update project status
             project["status"] = "completed"
             project["completed_at"] = datetime.utcnow().isoformat()
+            self._recompute_project_progress(project)
             
-            await push("project.completed", {"project_id": project_id})
+            await push("project.completed", {"project_id": project_id, "project_progress": project.get("progress")})
             logger.info(f"🎉 MILLION-DOLLAR SONG COMPLETED: {project_id}")
-            
+
         except Exception as e:
             logger.error(f"Pipeline failed for project {project_id}: {str(e)}")
             project_obj = self.projects.get(project_id)
@@ -274,6 +322,35 @@ class AIOrchestrator:
     async def get_project_status(self, project_id: str) -> Dict:
         """Get status of a project"""
         return self.projects.get(project_id, {"status": "not_found"})
+
+    def _recompute_project_progress(self, project: Dict):
+        stages = project.get("stage_meta", {})
+        if not stages:
+            project["progress"] = 0
+            return
+        total = len(stages)
+        accum = 0
+        for meta in stages.values():
+            accum += meta.get("progress", 0)
+        project["progress"] = int(accum / total)
+
+    async def get_project_aggregate(self, project_id: str) -> Dict:
+        project = self.projects.get(project_id)
+        if not project:
+            return {"status": "not_found"}
+        # Ensure progress up to date
+        self._recompute_project_progress(project)
+        return {
+            "id": project_id,
+            "name": project.get("name"),
+            "status": project.get("status"),
+            "created_at": project.get("created_at"),
+            "completed_at": project.get("completed_at"),
+            "progress": project.get("progress", 0),
+            "stages": project.get("stages"),
+            "stage_meta": project.get("stage_meta"),
+            "style_config": project.get("style_config"),
+        }
     
     async def get_total_songs(self) -> int:
         """Get total number of songs generated"""
