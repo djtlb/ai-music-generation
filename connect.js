@@ -237,7 +237,7 @@ ALLOWED_ORIGINS=http://localhost:${config.proxyPort},http://localhost:${config.f
   
   fs.writeFileSync(path.join('backend', '.env'), envContent);
   
-  backendProcess = spawn('python', ['main.py'], {
+  backendProcess = spawn('bash', ['-c', 'source venv/bin/activate && python main.py'], {
     stdio: 'pipe',
     shell: true,
     cwd: path.join(process.cwd(), 'backend')
