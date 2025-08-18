@@ -27,6 +27,28 @@ const dotenv = require('dotenv');
 const boxen = require('boxen');
 const ora = require('ora');
 
+// Simple arg parsing for non-interactive and mode flags
+function parseCliArgs() {
+  const args = process.argv.slice(2);
+  const flags = { mode: null, noInteractive: false };
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a === '--no-interactive' || a === '--non-interactive' || a === '--ci') {
+      flags.noInteractive = true;
+    } else if (a === '--mode' && i + 1 < args.length) {
+      flags.mode = args[i + 1];
+      i++;
+    } else if (a.startsWith('--mode=')) {
+      flags.mode = a.split('=')[1];
+    }
+  }
+  if (process.env.NODE_NO_INTERACTIVE === '1') flags.noInteractive = true;
+  if (!flags.mode && process.env.MODE) flags.mode = process.env.MODE;
+  return flags;
+}
+
+const CLI_FLAGS = parseCliArgs();
+
 // Configuration
 const DEFAULT_CONFIG = {
   frontendPort: 5173,
@@ -960,21 +982,31 @@ async function main() {
   
   // Load configuration
   const config = loadConfig();
-  
-  // Get user input for mode
-  const { mode } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'mode',
-      message: 'What would you like to do?',
-      choices: [
-        { name: 'Start development environment', value: 'start' },
-        { name: 'Set up integration files', value: 'setup' },
-        { name: 'Update configuration', value: 'config' },
-        { name: 'Exit', value: 'exit' }
-      ]
-    }
-  ]);
+  let mode = CLI_FLAGS.mode;
+
+  if (CLI_FLAGS.noInteractive && !mode) {
+    // default non-interactive mode
+    mode = 'start';
+  }
+
+  if (!CLI_FLAGS.noInteractive) {
+    // Get user input for mode only if interactive
+    const answer = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'mode',
+        message: 'What would you like to do?',
+        choices: [
+          { name: 'Start development environment', value: 'start' },
+          { name: 'Set up integration files', value: 'setup' },
+          { name: 'Update configuration', value: 'config' },
+          { name: 'Exit', value: 'exit' }
+        ],
+        default: mode || 'start'
+      }
+    ]);
+    mode = answer.mode;
+  }
   
   if (mode === 'exit') {
     console.log(chalk.blue('Exiting...'));
@@ -983,39 +1015,18 @@ async function main() {
   
   if (mode === 'config') {
     // Get configuration options
-    const answers = await inquirer.prompt([
-      {
-        type: 'number',
-        name: 'frontendPort',
-        message: 'Frontend port:',
-        default: config.frontendPort
-      },
-      {
-        type: 'number',
-        name: 'backendPort',
-        message: 'Backend port:',
-        default: config.backendPort
-      },
-      {
-        type: 'number',
-        name: 'proxyPort',
-        message: 'Development proxy port:',
-        default: config.proxyPort
-      },
-      {
-        type: 'input',
-        name: 'backendHost',
-        message: 'Backend host:',
-        default: config.backendHost
-      },
-      {
-        type: 'list',
-        name: 'environment',
-        message: 'Environment:',
-        choices: ['development', 'production', 'testing'],
-        default: config.environment
-      }
-    ]);
+    let answers;
+    if (CLI_FLAGS.noInteractive) {
+      answers = { ...config }; // reuse existing config
+    } else {
+      answers = await inquirer.prompt([
+        { type: 'number', name: 'frontendPort', message: 'Frontend port:', default: config.frontendPort },
+        { type: 'number', name: 'backendPort', message: 'Backend port:', default: config.backendPort },
+        { type: 'number', name: 'proxyPort', message: 'Development proxy port:', default: config.proxyPort },
+        { type: 'input', name: 'backendHost', message: 'Backend host:', default: config.backendHost },
+        { type: 'list', name: 'environment', message: 'Environment:', choices: ['development', 'production', 'testing'], default: config.environment }
+      ]);
+    }
     
     // Save configuration to .env
     const envContent = Object.entries(answers)
@@ -1053,6 +1064,9 @@ async function main() {
     startBackend(config);
     startFrontend(config);
     createDevProxy(config);
+    if (CLI_FLAGS.noInteractive) {
+      console.log(chalk.magenta('\nNon-interactive mode: logs will continue below. Press Ctrl+C to stop.'));
+    }
     
     // Handle process termination
     process.on('SIGINT', () => {
