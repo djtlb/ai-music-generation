@@ -1,0 +1,2 @@
+--requirement requirements.txt
+# Place dev-only pins/extensions here if split more aggressively later.

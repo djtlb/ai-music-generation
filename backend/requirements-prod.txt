@@ -1,0 +1,2 @@
+--requirement requirements.txt
+# TODO: Trim to runtime-only subset (exclude: dev/test/doc tooling)

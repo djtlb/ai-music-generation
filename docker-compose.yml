@@ -1,0 +1,32 @@
+version: '3.9'
+services:
+  api:
+    build: .
+    container_name: aimusic_api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app/backend:ro
+      - ./generated_audio:/app/generated_audio
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: aimusicgen
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
+volumes:
+  pgdata: {}
