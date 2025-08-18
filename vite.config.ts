@@ -22,4 +22,23 @@ export default defineConfig({
       '@': resolve(projectRoot, 'src')
     }
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/ws': {
+        target: 'ws://localhost:8000',
+        ws: true,
+      },
+      '/audio': {
+        target: 'http://localhost:8000',
+      },
+      '/static': {
+        target: 'http://localhost:8000',
+      }
+    },
+  },
 });

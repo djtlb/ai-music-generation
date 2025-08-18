@@ -10,7 +10,13 @@
         "lint": "eslint .",
         "optimize": "vite optimize",
         "preview": "vite preview",
-        "backend": "cd backend && python main.py"
+        "backend": "cd backend && python main.py",
+        "start": "node connect.js",
+        "start:frontend": "vite",
+        "start:backend": "cd backend && python main.py",
+        "build:all": "npm run build && cd backend && pip install -r requirements.txt",
+        "connect": "node connect.js",
+        "setup": "bash setup.sh"
     },
     "dependencies": {
         "@heroicons/react": "^2.2.0",
