@@ -356,6 +356,24 @@ async def get_project_status(
         logger.error(f"Project status error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/project/{project_id}/aggregate")
+async def get_project_aggregate(
+    project_id: str,
+    current_user: dict = Depends(get_current_user),
+    ai_orchestrator = Depends(get_ai_orchestrator)
+):
+    """Get detailed aggregate project info including stage metadata and progress"""
+    try:
+        agg = await ai_orchestrator.get_project_aggregate(project_id)
+        if agg.get("status") == "not_found":
+            raise HTTPException(status_code=404, detail="Project not found")
+        return agg
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Project aggregate error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/download/{file_id}")
 async def download_file(
     file_id: str,
