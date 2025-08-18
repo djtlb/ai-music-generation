@@ -81,3 +81,12 @@ export async function generateFullSongBackend(params: GenerateFullSongParams): P
   }
   return res.json();
 }
+
+export async function fetchProjectAggregate(projectId: string): Promise<any> {
+  const token = await ensureDevToken();
+  const res = await fetch(`${API_BASE}/api/v1/music/project/${projectId}/aggregate`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error(`Aggregate fetch failed (${res.status})`);
+  return res.json();
+}

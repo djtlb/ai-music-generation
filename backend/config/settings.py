@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     app_name: str = "AI Music Generation Platform"
     app_version: str = "2.0.0"
     debug: bool = False
+    environment: str = "development"  # development | staging | production
+    log_level: str = "INFO"
+    fast_dev: bool = False  # enables dev-only conveniences (dev token endpoint, relaxed CORS)
+    environment: str = "development"  # development | staging | production
+    log_level: str = "INFO"
+    fast_dev: bool = False  # enables dev-only conveniences (dev token endpoint, relaxed CORS)
     
     # API Settings
     api_host: str = "0.0.0.0"
