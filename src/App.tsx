@@ -175,13 +175,20 @@ function App() {
   // (will be tree-shaken if present)
   let generateFullSongBackend: any = null;
   let fetchProjectAggregate: any = null;
+  let fetchProjects: any = null;
+  let fetchProjectEvents: any = null;
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const apiLib = require('./lib/api.ts');
     generateFullSongBackend = apiLib.generateFullSongBackend;
     fetchProjectAggregate = apiLib.fetchProjectAggregate;
+    fetchProjects = apiLib.fetchProjects;
+    fetchProjectEvents = apiLib.fetchProjectEvents;
   // eslint-disable-next-line no-empty
   } catch {}
+  const [backendProjects, setBackendProjects] = useState<any[]>([]);
+  const [selectedBackendProject, setSelectedBackendProject] = useState<string | null>(null);
+  const [backendProjectEvents, setBackendProjectEvents] = useState<any[] | null>(null);
 
   const stopStatusPolling = () => {
     if (backendStatusTimer.current) {
@@ -210,6 +217,22 @@ function App() {
     } catch (e) {
       stopStatusPolling();
     }
+  }, []);
+
+  const refreshBackendProjects = useCallback(async () => {
+    if (!fetchProjects) return;
+    try {
+      const resp = await fetchProjects(20, 0);
+      setBackendProjects(resp.items || []);
+    } catch (e) {}
+  }, []);
+
+  const loadBackendProjectEvents = useCallback(async (projectId: string) => {
+    if (!fetchProjectEvents) return;
+    try {
+      const events = await fetchProjectEvents(projectId);
+      setBackendProjectEvents(events);
+    } catch (e) { setBackendProjectEvents(null); }
   }, []);
 
   // WebSocket for stage updates when backend mode active
@@ -277,6 +300,7 @@ function App() {
           pollBackendStatus(resp.project_id);
         }
         toast.success('Backend generation started');
+  refreshBackendProjects();
       } else {
         setBackendMode(false);
         const song = await aiService.current.generateFullSong(
@@ -301,6 +325,10 @@ function App() {
       setCurrentStage("");
     }
   }, [lyricsPrompt, genrePrompt, setSongHistory, health, pollBackendStatus]);
+
+  if (backendMode && backendProjects.length === 0 && !isGenerating) {
+    refreshBackendProjects();
+  }
 
   // Audio control functions
   const togglePlayback = useCallback(() => {
@@ -734,6 +762,41 @@ function App() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {backendMode && (
+                  <div className="mb-8">
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">Backend Projects <span className="text-xs font-normal text-muted-foreground">(live)</span></h4>
+                    {backendProjects.length === 0 && <p className="text-sm text-muted-foreground">No backend projects yet.</p>}
+                    {backendProjects.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        {backendProjects.map(p => (
+                          <div key={p.id} className="p-4 rounded border hover:bg-muted/40 cursor-pointer" onClick={() => { setSelectedBackendProject(p.id); loadBackendProjectEvents(p.id); }}>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-medium text-sm truncate" title={p.name}>{p.name}</span>
+                              <Badge variant={p.status === 'completed' ? 'default' : p.status === 'failed' ? 'destructive' : 'secondary'} className="text-xs">{p.status}</Badge>
+                            </div>
+                            <div className="h-1.5 bg-muted rounded overflow-hidden mt-2">
+                              <div className="h-full bg-primary" style={{ width: `${p.progress || 0}%` }} />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-1">{p.progress || 0}% • {new Date(p.created_at || Date.now()).toLocaleTimeString()}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {selectedBackendProject && backendProjectEvents && (
+                      <div className="mt-4">
+                        <h5 className="text-sm font-medium mb-2">Event Timeline</h5>
+                        <div className="bg-muted rounded p-2 max-h-48 overflow-auto text-xs space-y-1">
+                          {backendProjectEvents.map((ev, idx) => (
+                            <div key={idx} className="flex gap-2">
+                              <span className="text-muted-foreground whitespace-nowrap">{new Date(ev.created_at || ev.ts).toLocaleTimeString()}</span>
+                              <span>{ev.event_type}{ev.stage ? ` (${ev.stage})` : ''}{ev.progress ? ` -> ${ev.progress}%` : ''}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {songHistory.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {songHistory.map((song) => (
