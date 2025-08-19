@@ -1,0 +1,7 @@
+-r backend/requirements.txt
+fastapi
+uvicorn
+websockets
+httpx
+pytest
+pytest-asyncio
