@@ -134,3 +134,25 @@ class ApiClient {
 // Create and export a singleton instance
 const apiClient = new ApiClient();
 export default apiClient;
+
+// Compatibility export for existing code expecting ensureDevToken from JS module.
+// In TS build we use api.ts; this shim issues a dev token request once and caches it.
+let _devToken = null;
+let _devTokenTs = 0;
+async function ensureDevToken() {
+  const fresh = Date.now() - _devTokenTs < 50 * 60 * 1000;
+  if (_devToken && fresh) return _devToken;
+  try {
+    const res = await fetch('/api/v1/dev/token');
+    if (!res.ok) throw new Error('dev token fetch failed');
+    const data = await res.json();
+    _devToken = data.token;
+    _devTokenTs = Date.now();
+    if (_devToken) apiClient.setApiKey(_devToken);
+    return _devToken;
+  } catch (e) {
+    console.warn('ensureDevToken failed', e);
+    throw e;
+  }
+}
+export { ensureDevToken };
