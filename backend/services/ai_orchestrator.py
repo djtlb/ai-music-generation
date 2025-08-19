@@ -7,6 +7,14 @@ import logging
 from typing import Dict, Optional, List
 from datetime import datetime
 import uuid
+try:
+    from config.settings import get_settings  # type: ignore
+except ModuleNotFoundError:  # fallback if executed differently
+    from backend.config.settings import get_settings  # type: ignore
+try:
+    from repositories import project_repository as project_repo  # type: ignore
+except ModuleNotFoundError:
+    from backend.repositories import project_repository as project_repo  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +24,7 @@ class AIOrchestrator:
     def __init__(self):
         self.tasks: Dict[str, Dict] = {}
         self.projects: Dict[str, Dict] = {}
+        self.persist_enabled = get_settings().persist_enabled
         
     async def initialize(self):
         """Initialize AI models and services"""
@@ -54,6 +63,8 @@ class AIOrchestrator:
             "progress": 0
         }
         
+        if self.persist_enabled:
+            asyncio.create_task(project_repo.create_project(project_id, name, user_id, style_config))
         logger.info(f"Created project {project_id} for user {user_id}")
         return project_id
         
@@ -196,6 +207,8 @@ class AIOrchestrator:
                     "duration_sec": None,
                     "progress": 0
                 }
+                if self.persist_enabled:
+                    asyncio.create_task(project_repo.stage_start(project_id, stage))
 
             def stage_complete(stage: str):
                 meta = project.get("stage_meta", {}).get(stage)
@@ -211,6 +224,9 @@ class AIOrchestrator:
                     meta["status"] = "completed"
                     meta["progress"] = 100
                 self._recompute_project_progress(project)
+                if self.persist_enabled:
+                    asyncio.create_task(project_repo.stage_complete(project_id, stage))
+                    asyncio.create_task(project_repo.update_project(project_id, progress=project.get("progress")))
 
             async def push_stage_progress(stage: str, value: int):
                 meta = project.get("stage_meta", {}).get(stage)
@@ -218,6 +234,9 @@ class AIOrchestrator:
                     meta["progress"] = value
                 self._recompute_project_progress(project)
                 await push("stage.progress", {"project_id": project_id, "stage": stage, "progress": value, "project_progress": project.get("progress")})
+                if self.persist_enabled:
+                    asyncio.create_task(project_repo.stage_progress(project_id, stage, value))
+                    asyncio.create_task(project_repo.update_project(project_id, progress=project.get("progress")))
 
             # Stage 1: Lyrics Generation
             if lyrics_request:
@@ -300,7 +319,9 @@ class AIOrchestrator:
             project["status"] = "completed"
             project["completed_at"] = datetime.utcnow().isoformat()
             self._recompute_project_progress(project)
-            
+            if self.persist_enabled:
+                asyncio.create_task(project_repo.project_completed(project_id))
+                asyncio.create_task(project_repo.update_project(project_id, progress=project.get("progress")))
             await push("project.completed", {"project_id": project_id, "project_progress": project.get("progress")})
             logger.info(f"🎉 MILLION-DOLLAR SONG COMPLETED: {project_id}")
 
@@ -310,6 +331,8 @@ class AIOrchestrator:
             if project_obj is not None:
                 project_obj["status"] = "failed"
                 project_obj["error"] = str(e)
+            if self.persist_enabled:
+                asyncio.create_task(project_repo.project_failed(project_id, str(e)))
             try:
                 await push("project.failed", {"project_id": project_id, "error": str(e)})
             except Exception:

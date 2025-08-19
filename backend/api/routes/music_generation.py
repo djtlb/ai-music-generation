@@ -13,6 +13,19 @@ from core.security import get_current_user, check_subscription_tier
 from services.ai_orchestrator import get_ai_orchestrator
 from services.audio_engine import get_audio_engine  # type: ignore
 from core.redis_client import cache  # runtime-provided client (may be stubbed)
+try:
+    from config.settings import get_settings  # type: ignore
+except ModuleNotFoundError:
+    from backend.config.settings import get_settings  # type: ignore
+from sqlalchemy import select
+try:
+    from core.database import init_db  # type: ignore
+except ModuleNotFoundError:
+    from backend.core.database import init_db  # type: ignore
+try:
+    from models.project_models import Project  # type: ignore
+except ModuleNotFoundError:
+    from backend.models.project_models import Project  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -471,4 +484,63 @@ async def get_generation_stats(
         
     except Exception as e:
         logger.error(f"Stats error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/projects")
+async def list_projects(
+    limit: int = 20,
+    offset: int = 0,
+    current_user: dict = Depends(get_current_user),
+    ai_orchestrator = Depends(get_ai_orchestrator)
+):
+    """List recent projects for the current user (DB-backed if persistence enabled)."""
+    try:
+        user_id = current_user["user_id"]
+        settings = get_settings()
+        projects: List[Dict[str, Any]] = []
+        if settings.persist_enabled:
+            from core.database import async_session_maker as maker
+            if maker is None:
+                await init_db()
+            if maker is None:
+                raise HTTPException(status_code=500, detail="Database not initialized")
+            async with maker() as session:  # type: ignore
+                stmt = (
+                    select(Project)
+                    .where(Project.user_id == user_id)
+                    .order_by(Project.created_at.desc())
+                    .offset(offset)
+                    .limit(limit)
+                )
+                result = await session.execute(stmt)
+                rows = result.scalars().all()
+                for p in rows:
+                    projects.append({
+                        "id": p.id,
+                        "name": p.name,
+                        "status": p.status,
+                        "progress": p.progress,
+                        "created_at": p.created_at.isoformat() if p.created_at else None,
+                        "completed_at": p.completed_at.isoformat() if p.completed_at else None,
+                        "error": p.error,
+                    })
+        else:
+            for proj in ai_orchestrator.projects.values():
+                if proj.get("user_id") == user_id:
+                    projects.append({
+                        "id": proj.get("id"),
+                        "name": proj.get("name"),
+                        "status": proj.get("status"),
+                        "progress": proj.get("progress"),
+                        "created_at": proj.get("created_at"),
+                        "completed_at": proj.get("completed_at"),
+                        "error": proj.get("error"),
+                    })
+            projects.sort(key=lambda x: x.get("created_at") or "", reverse=True)
+            projects = projects[offset: offset + limit]
+        return {"items": projects, "count": len(projects), "limit": limit, "offset": offset}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"List projects error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
