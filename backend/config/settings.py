@@ -1,25 +1,48 @@
-"""
-Configuration settings for the AI Music Generation Platform
+"""Application configuration.
+
+Adds backward-compatible support for both prefixed (AIMUSIC_*) and legacy
+unprefixed env vars (FAST_DEV, PERSIST_ENABLED / PERSIST, SECRET_KEY, etc.).
+Prefixed names win; legacy names are only used if the prefixed variant is
+absent. This helps local developers who set FAST_DEV=1 out of habit.
 """
 
 from pydantic_settings import BaseSettings
 from typing import List, Optional
 import os
-from pathlib import Path
+
+
+# --- Environment normalization (run before Settings instantiation) ------------
+_FALLBACK_ENV_MAP = {
+    # legacy_name: canonical_prefixed_name
+    "FAST_DEV": "AIMUSIC_FAST_DEV",
+    "PERSIST_ENABLED": "AIMUSIC_PERSIST_ENABLED",
+    "PERSIST": "AIMUSIC_PERSIST_ENABLED",
+    "SECRET_KEY": "AIMUSIC_SECRET_KEY",
+    "DATABASE_URL": "AIMUSIC_DATABASE_URL",
+    "REDIS_URL": "AIMUSIC_REDIS_URL",
+}
+
+for legacy, canonical in _FALLBACK_ENV_MAP.items():
+    if legacy in os.environ and canonical not in os.environ:
+        os.environ[canonical] = os.environ[legacy]
+
+
+def _coerce_bool(val: Optional[str], default: bool = False) -> bool:
+    if val is None:
+        return default
+    return str(val).strip().lower() in {"1", "true", "yes", "on", "y"}
 
 class Settings(BaseSettings):
-    """Application settings"""
-    
+    """Application settings (values loaded from environment)."""
+
     # App Info
     app_name: str = "AI Music Generation Platform"
     app_version: str = "2.0.0"
     debug: bool = False
     environment: str = "development"  # development | staging | production
     log_level: str = "INFO"
-    fast_dev: bool = False  # enables dev-only conveniences (dev token endpoint, relaxed CORS)
-    environment: str = "development"  # development | staging | production
-    log_level: str = "INFO"
-    fast_dev: bool = False  # enables dev-only conveniences (dev token endpoint, relaxed CORS)
+    fast_dev: bool = False  # dev conveniences
+    persist_enabled: bool = False  # DB persistence toggle
     
     # API Settings
     api_host: str = "0.0.0.0"
@@ -103,11 +126,17 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_prefix = "AIMUSIC_"
 
+    # Post-init normalization for booleans that may come in as strings
+    def model_post_init(self, __context):  # type: ignore[override]
+        # Preserve original explicit values but allow legacy raw env overrides
+        self.fast_dev = bool(self.fast_dev) or _coerce_bool(os.getenv("AIMUSIC_FAST_DEV"))
+        self.persist_enabled = bool(self.persist_enabled) or _coerce_bool(os.getenv("AIMUSIC_PERSIST_ENABLED"))
+
 # Global settings instance
 _settings = None
 
 def get_settings() -> Settings:
-    """Get application settings"""
+    """Singleton accessor for settings (instantiated once)."""
     global _settings
     if _settings is None:
         _settings = Settings()
