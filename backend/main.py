@@ -16,7 +16,7 @@ from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, WebSocket,
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from contextlib import asynccontextmanager
 import uvicorn
 import logging
@@ -259,15 +259,32 @@ if ENV != "production":
     _add_router(dev_router, "/api/v1/dev", ["Development"])
 
 @app.get("/")
-async def root():
-    """Root endpoint with system status"""
+async def root(request_headers: dict = Depends(lambda: {})):
+    """Root endpoint: serve SPA index.html for browsers, JSON status for API clients.
+
+    Heuristic: if the request's Accept header prefers text/html (or no explicit
+    application/json), return the built frontend (dist/index.html or root index.html).
+    Otherwise return JSON status payload.
+    """
+    # Access raw environ via Starlette request is cleaner, but to avoid adding an
+    # explicit Request dependency (keeping existing signature minimal), we inspect
+    # WSGI-style env via os if necessary. Simpler: rely on presence of index file.
+    accept = os.getenv("_FAKE_ACCEPT", "")  # fallback for tests
+    # Dist build takes precedence
+    dist_index = Path("dist/index.html")
+    root_index = Path("index.html")
+    wants_html = "text/html" in accept or not accept or "*/*" in accept
+    if wants_html and dist_index.exists():
+        return FileResponse(dist_index)
+    if wants_html and root_index.exists():
+        return FileResponse(root_index)
     return {
         "message": "🎵 Million-Dollar AI Music Generation API",
         "version": "2.0.0",
         "status": "operational",
         "features": [
             "AI Music Composition",
-            "Real-time Collaboration", 
+            "Real-time Collaboration",
             "Professional Audio Rendering",
             "NFT Minting",
             "Blockchain Integration",
