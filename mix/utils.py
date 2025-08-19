@@ -8,7 +8,7 @@ import torchaudio
 import numpy as np
 import yaml
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 
 def compute_lufs(audio: torch.Tensor, sample_rate: int = 48000) -> float:
