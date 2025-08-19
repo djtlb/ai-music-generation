@@ -90,3 +90,20 @@ export async function fetchProjectAggregate(projectId: string): Promise<any> {
   if (!res.ok) throw new Error(`Aggregate fetch failed (${res.status})`);
   return res.json();
 }
+export async function fetchProjects(limit = 20, offset = 0): Promise<any> {
+  const token = await ensureDevToken();
+  const res = await fetch(`${API_BASE}/api/v1/music/projects?limit=${limit}&offset=${offset}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error(`Projects fetch failed (${res.status})`);
+  return res.json();
+}
+
+export async function fetchProjectEvents(projectId: string): Promise<any[]> {
+  const token = await ensureDevToken();
+  const res = await fetch(`${API_BASE}/api/v1/music/project/${projectId}/events`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error(`Events fetch failed (${res.status})`);
+  return res.json();
+}

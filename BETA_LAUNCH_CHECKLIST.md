@@ -9,7 +9,7 @@ Legend: [ ] pending | [~] in progress | [x] done
 - [x] WebSocket real-time stage events
 - [x] Frontend integration (trigger + progress UI)
 - [x] In-memory orchestration layer
-- [ ] Persistent project + stage storage (Postgres)
+- [~] Persistent project + stage storage (Postgres)
 - [ ] Background task queue (for long-running stages)
 
 ## Auth & Security
@@ -52,8 +52,8 @@ Legend: [ ] pending | [~] in progress | [x] done
 
 ## Data & Persistence
 
-- [ ] Schema design for projects/stages
-- [ ] Migration scripts
+- [x] Schema design for projects/stages (models + auto create)
+- [ ] Migration scripts (pending Alembic setup)
 - [ ] Backfill strategy (if pre-beta data retained)
 
 ## Performance
