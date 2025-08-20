@@ -4,15 +4,29 @@ services:
     container_name: aimusic_api
     env_file:
       - .env
+    environment:
+      # Dev-friendly runtime (override in production)
+      ENV: development
+      FAST_DEV: "1"
+      ALLOW_MISSING_OPTIONALS: "1"
+      PYTHONPATH: /app/backend
+      USE_GUNICORN: "0"   # use uvicorn directly for quicker restarts
+      LOG_LEVEL: info
     ports:
       - "8000:8000"
     depends_on:
       - postgres
       - redis
     volumes:
-      - ./backend:/app/backend:ro
+      - ./backend:/app/backend
       - ./generated_audio:/app/generated_audio
       - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
     restart: unless-stopped
   postgres:
     image: postgres:15-alpine
@@ -27,5 +41,6 @@ services:
     image: redis:7-alpine
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     restart: unless-stopped
+
 volumes:
   pgdata: {}

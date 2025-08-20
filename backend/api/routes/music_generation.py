@@ -13,19 +13,19 @@ from core.security import get_current_user, check_subscription_tier
 from services.ai_orchestrator import get_ai_orchestrator
 from services.audio_engine import get_audio_engine  # type: ignore
 from core.redis_client import cache  # runtime-provided client (may be stubbed)
-try:
+try:  # settings import tolerant
     from config.settings import get_settings  # type: ignore
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     from backend.config.settings import get_settings  # type: ignore
 from sqlalchemy import select
-try:
+try:  # db init tolerant
     from core.database import init_db  # type: ignore
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     from backend.core.database import init_db  # type: ignore
-try:
-    from models.project_models import Project  # type: ignore
-except ModuleNotFoundError:
-    from backend.models.project_models import Project  # type: ignore
+try:  # model imports tolerant
+    from models.project_models import Project, ProjectEvent  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    from backend.models.project_models import Project, ProjectEvent  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -385,6 +385,47 @@ async def get_project_aggregate(
         raise
     except Exception as e:
         logger.error(f"Project aggregate error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/project/{project_id}/events")
+async def get_project_events(
+    project_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Return project event timeline (DB or in-memory fallback)."""
+    try:
+        settings = get_settings()
+        user_id = current_user["user_id"]
+        if settings.persist_enabled:
+            from core.database import init_db, async_session_maker as maker
+            if maker is None:
+                await init_db()
+            if maker is None:
+                raise HTTPException(status_code=500, detail="Database not initialized")
+            async with maker() as session:  # type: ignore
+                from sqlalchemy import select as _select  # local import to avoid global requirement when unused
+                stmt = _select(ProjectEvent).where(ProjectEvent.project_id == project_id).order_by(ProjectEvent.id.asc())
+                result = await session.execute(stmt)
+                rows = result.scalars().all()
+                return [
+                    {
+                        "id": ev.id,
+                        "event_type": ev.event_type,
+                        "stage": ev.stage,
+                        "data": ev.data,
+                        "created_at": ev.created_at.isoformat()
+                    } for ev in rows
+                ]
+        else:
+            orch = await get_ai_orchestrator()
+            proj = orch.projects.get(project_id)
+            if not proj or proj.get("user_id") != user_id:
+                raise HTTPException(status_code=404, detail="Project not found")
+            return proj.get("events", [])
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Project events error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/download/{file_id}")
