@@ -62,7 +62,8 @@ class AIOrchestrator:
             "stage_meta": {},  # stage -> {start, end, status, duration_sec, progress}
             "progress": 0
         }
-        
+        self.projects[project_id]["events"] = []
+
         if self.persist_enabled:
             asyncio.create_task(project_repo.create_project(project_id, name, user_id, style_config))
         logger.info(f"Created project {project_id} for user {user_id}")
@@ -209,6 +210,11 @@ class AIOrchestrator:
                 }
                 if self.persist_enabled:
                     asyncio.create_task(project_repo.stage_start(project_id, stage))
+                project.setdefault("events", []).append({
+                    "event_type": "stage.start",
+                    "stage": stage,
+                    "ts": datetime.utcnow().isoformat()
+                })
 
             def stage_complete(stage: str):
                 meta = project.get("stage_meta", {}).get(stage)
@@ -227,6 +233,11 @@ class AIOrchestrator:
                 if self.persist_enabled:
                     asyncio.create_task(project_repo.stage_complete(project_id, stage))
                     asyncio.create_task(project_repo.update_project(project_id, progress=project.get("progress")))
+                project.setdefault("events", []).append({
+                    "event_type": "stage.completed",
+                    "stage": stage,
+                    "ts": datetime.utcnow().isoformat()
+                })
 
             async def push_stage_progress(stage: str, value: int):
                 meta = project.get("stage_meta", {}).get(stage)
@@ -237,6 +248,13 @@ class AIOrchestrator:
                 if self.persist_enabled:
                     asyncio.create_task(project_repo.stage_progress(project_id, stage, value))
                     asyncio.create_task(project_repo.update_project(project_id, progress=project.get("progress")))
+                if value % 25 == 0:
+                    project.setdefault("events", []).append({
+                        "event_type": "stage.progress",
+                        "stage": stage,
+                        "progress": value,
+                        "ts": datetime.utcnow().isoformat()
+                    })
 
             # Stage 1: Lyrics Generation
             if lyrics_request:
@@ -324,6 +342,10 @@ class AIOrchestrator:
                 asyncio.create_task(project_repo.update_project(project_id, progress=project.get("progress")))
             await push("project.completed", {"project_id": project_id, "project_progress": project.get("progress")})
             logger.info(f"🎉 MILLION-DOLLAR SONG COMPLETED: {project_id}")
+            project.setdefault("events", []).append({
+                "event_type": "project.completed",
+                "ts": datetime.utcnow().isoformat()
+            })
 
         except Exception as e:
             logger.error(f"Pipeline failed for project {project_id}: {str(e)}")
@@ -337,6 +359,12 @@ class AIOrchestrator:
                 await push("project.failed", {"project_id": project_id, "error": str(e)})
             except Exception:
                 pass
+            if project_obj is not None:
+                project_obj.setdefault("events", []).append({
+                    "event_type": "project.failed",
+                    "error": str(e),
+                    "ts": datetime.utcnow().isoformat()
+                })
     
     async def get_task_status(self, task_id: str) -> Dict:
         """Get status of a specific task"""

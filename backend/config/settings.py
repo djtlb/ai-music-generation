@@ -72,6 +72,7 @@ class Settings(BaseSettings):
         "https://aimusicgen.com",
         "https://app.aimusicgen.com"
     ]
+    allowed_origins_str: str = ""
     
     # File Storage
     upload_directory: str = "uploads"
@@ -131,6 +132,8 @@ class Settings(BaseSettings):
         # Preserve original explicit values but allow legacy raw env overrides
         self.fast_dev = bool(self.fast_dev) or _coerce_bool(os.getenv("AIMUSIC_FAST_DEV"))
         self.persist_enabled = bool(self.persist_enabled) or _coerce_bool(os.getenv("AIMUSIC_PERSIST_ENABLED"))
+        if self.allowed_origins_str:
+            self.allowed_origins = [origin.strip() for origin in self.allowed_origins_str.split(",")]
 
 # Global settings instance
 _settings = None

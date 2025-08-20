@@ -1,2 +1,37 @@
---requirement requirements.txt
-# TODO: Trim to runtime-only subset (exclude: dev/test/doc tooling)
+###############################
+# Minimal Production Requirements
+# (Trimmed to avoid heavy / optional / dev dependencies that caused
+# pip "resolution-too-deep" in Docker build.)
+# Add model/audio stacks (torch, diffusers, librosa, etc.) back incrementally
+# once base image builds successfully, preferably with pinned versions or
+# a constraints file.
+###############################
+
+fastapi==0.116.1
+uvicorn==0.35.0
+gunicorn==23.0.0
+pydantic==2.11.7
+pydantic-settings==2.10.1
+sqlalchemy==2.0.43
+asyncpg==0.30.0
+alembic==1.16.4
+redis==6.4.0
+websockets==15.0.1
+structlog==25.4.0
+prometheus-client==0.22.1
+sentry-sdk==2.35.0
+orjson==3.11.2
+aiofiles==24.1.0
+python-dotenv==1.1.1
+PyYAML==6.0.2
+python-multipart==0.0.20
+fastapi-cors==0.0.6
+httpx==0.28.1
+
+# Optional (uncomment if needed soon):
+# transformers==4.55.2
+# torch==2.8.0
+# diffusers==0.35.0
+# librosa==0.11.0
+
+# Keep this file lean; create a separate requirements-ml.txt for model deps.

@@ -2,18 +2,172 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Music Composer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="/src/main.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Music Generation Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta {
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .api-demo {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        .api-endpoint {
+            font-family: 'Courier New', monospace;
+            background: #2c3e50;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 AI Music Generation</h1>
+            <p>Create professional music with artificial intelligence</p>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <h3>🎼 AI Composition</h3>
+                <p>Generate original melodies, harmonies, and complete songs using advanced AI models.</p>
+            </div>
+            <div class="feature">
+                <h3>🎤 Real-time Collaboration</h3>
+                <p>Work together with other musicians in real-time through our WebSocket-powered platform.</p>
+            </div>
+            <div class="feature">
+                <h3>🎧 Professional Audio</h3>
+                <p>High-quality audio rendering and processing for professional music production.</p>
+            </div>
+            <div class="feature">
+                <h3>🔗 Blockchain Integration</h3>
+                <p>Mint your creations as NFTs and leverage blockchain technology for ownership.</p>
+            </div>
+            <div class="feature">
+                <h3>📊 Analytics Dashboard</h3>
+                <p>Track performance, engagement, and revenue with comprehensive analytics.</p>
+            </div>
+            <div class="feature">
+                <h3>💼 Enterprise Ready</h3>
+                <p>Scalable architecture built for high-volume commercial applications.</p>
+            </div>
+        </div>
+
+        <div class="api-demo">
+            <h2>API Documentation</h2>
+            <p>Access our powerful API endpoints:</p>
+            <div class="api-endpoint">
+                GET /api/v1/health - System health check
+            </div>
+            <div class="api-endpoint">
+                POST /api/v1/generate/full-song - Generate complete songs
+            </div>
+            <div class="api-endpoint">
+                GET /api/v1/system/stats - System statistics
+            </div>
+            <div class="api-endpoint">
+                WebSocket /ws/{client_id} - Real-time updates
+            </div>
+        </div>
+
+        <div class="cta">
+            <a href="/docs" class="btn">View API Documentation</a>
+            <a href="/health" class="btn" style="background: #4ecdc4; margin-left: 1rem;">Check System Status</a>
+        </div>
+
+        <div style="text-align: center; margin-top: 3rem; opacity: 0.8;">
+            <p>Powered by FastAPI • Built for Scale • Ready for Production</p>
+        </div>
+    </div>
+
+    <script>
+        // Simple API status check
+        fetch('/health')
+            .then(response => response.json())
+            .then(data => {
+                console.log('System Status:', data);
+                if (data.status === 'healthy') {
+                    document.querySelector('.header p').innerHTML =
+                        'Create professional music with artificial intelligence • <span style="color: #4ecdc4;">✅ System Online</span>';
+                }
+            })
+            .catch(err => console.log('API not available:', err));
+    </script>
 </body>
 
 </html>

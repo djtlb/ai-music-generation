@@ -10,6 +10,7 @@ RUN if [ -f vite.config.ts ]; then npm run build || echo "Skipping frontend buil
 
 # Stage 2: Backend / API image
 FROM python:3.11-slim AS backend
+ARG INSTALL_BUILD_DEPS=1
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
@@ -17,11 +18,12 @@ WORKDIR /app
 
 # System deps (audio libs minimal subset; extend as needed)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    ffmpeg \
-    libsndfile1 \
-    git \
-  && rm -rf /var/lib/apt/lists/*
+        ffmpeg \
+        libsndfile1 \
+        git \
+        curl \
+        && if [ "$INSTALL_BUILD_DEPS" = "1" ]; then apt-get install -y --no-install-recommends build-essential; fi \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements (split support)
 COPY backend/requirements.txt backend/requirements.txt

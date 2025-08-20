@@ -18,6 +18,20 @@ Option B – Docker Compose:
 2. `docker compose up --build` (uses multi‑stage Dockerfile, launches api + postgres + redis).
 3. Frontend static build is baked into the image; access API at `http://localhost:8000` and bundled UI (if served) or run `npm run dev` separately for hot reload.
 
+### Fast Path (Unified Script)
+After cloning, you can use the helper script that wraps validation, build, compose up, and readiness wait:
+
+```bash
+chmod +x go-live.sh
+./go-live.sh --rebuild
+```
+
+Flags:
+- `--rebuild` force a clean image rebuild (no cache)
+- `--fresh` stop & remove current stack, including volumes (drops DB!)
+
+The script auto-detects missing `.env`, attempts to enter a `docker` group subshell if your shell session hasn't refreshed group membership yet, and waits until `GET /health/ready` passes.
+
 ## Core Endpoints
 POST /api/v1/music/generate/full-song → Start full pipeline (returns project_id).
 GET  /api/v1/music/project/{project_id}/aggregate → Consolidated project + stage metadata + computed progress.

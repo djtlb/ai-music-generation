@@ -1,0 +1,47 @@
+# Ignore git + VCS
+.git
+.gitignore
+
+# Node modules & build cache
+node_modules
+npm-debug.log
+yarn.lock
+pnpm-lock.yaml
+
+# Python caches
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.pytest_cache
+.mypy_cache
+
+# Virtual envs
+.env/
+.venv/
+venv/
+
+# Dist / build artifacts (frontend will be rebuilt inside container)
+dist
+build
+coverage
+htmlcov
+
+# Local configs/secrets (real .env copied separately if needed)
+.env
+.env.*
+!*.example
+
+# Data / generated
+.generated
+uploads
+generated_audio
+
+# OS/editor
+.DS_Store
+.idea
+.vscode
+*.swp
+
+# Tests not needed for runtime image
+/tests
