@@ -6,6 +6,15 @@
 
 set -euo pipefail
 
+# Helper functions
+err() {
+  echo "ERROR: $*" >&2
+}
+
+log() {
+  echo "INFO: $*" >&2
+}
+
 REMOTE_HOST="${REMOTE_HOST:-}"              # Remote SSH target (must be set as environment variable)
 if [ -z "$REMOTE_HOST" ]; then
   err "REMOTE_HOST is not set. Please set it before running."
@@ -16,7 +25,7 @@ fi
 REMOTE_DIR="/opt/ai-music-generation"      # Destination directory on remote host (override: REMOTE_DIR=...)
 PYTHON_BIN="python3"                       # Remote python command
 VENV_DIR=".venv"                           # Virtualenv directory name under REMOTE_DIR
-APP_ENTRY="backend/main.py"                         # Entry point script
+APP_ENTRY="app.py"                         # Entry point script
 
 # You can force which requirements file to install first via REQUIREMENTS_FILE env var, e.g.
 # REQUIREMENTS_FILE=backend/requirements-prod.txt ./deploy_remote.sh deploy
@@ -141,7 +150,9 @@ cmd_deploy() {
   cmd_stop || true
   cmd_start
   cmd_status
-}logs() {
+}
+
+cmd_service_logs() {
   remote_exec journalctl -u ai-music.service -n 200 -f --no-pager
 }
 
