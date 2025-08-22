@@ -1,94 +1,183 @@
-# AI Music Generation Platform (Beta)
+# Supabase CLI
 
-Full‑stack system for automated multi‑stage music generation, arrangement, mixing and progress tracking. 
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-## High‑Level Overview
-Backend: FastAPI service orchestrating a multi‑stage pipeline (planning → generation → arrangement → rendering → mixing). Real‑time progress via WebSockets and aggregate REST endpoints. In‑memory orchestration (DB persistence planned).
-Frontend: React + Vite + TypeScript UI triggering full‑song generation, showing stage progress and aggregate project status.
-Infrastructure: Multi‑stage Docker build (frontend → Python runtime), optional Postgres + Redis via docker‑compose, dev orchestrator script for local rapid iteration (FAST_DEV mode).
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-## Quick Start (Local Dev)
-Option A – Orchestrator (auto installs, runs backend + frontend):
-1. Ensure Python 3.11+, Node 18+, Redis (optional), Postgres (optional if using compose) installed.
-2. Copy `.env.example` to `.env` and adjust secrets.
-3. Run: `npm run connect` (or `pnpm connect` if using pnpm) – this sets up venv, installs deps, launches backend & frontend with health polling.
+This repository contains all the functionality for Supabase CLI.
 
-Option B – Docker Compose:
-1. Copy `.env.example` to `.env`.
-2. `docker compose up --build` (uses multi‑stage Dockerfile, launches api + postgres + redis).
-3. Frontend static build is baked into the image; access API at `http://localhost:8000` and bundled UI (if served) or run `npm run dev` separately for hot reload.
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-### Fast Path (Unified Script)
-After cloning, you can use the helper script that wraps validation, build, compose up, and readiness wait:
+## Getting started
+
+### Install the CLI
+
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
 ```bash
-chmod +x go-live.sh
-./go-live.sh --rebuild
+npm i supabase --save-dev
 ```
 
-Flags:
-- `--rebuild` force a clean image rebuild (no cache)
-- `--fresh` stop & remove current stack, including volumes (drops DB!)
+To install the beta release channel:
 
-The script auto-detects missing `.env`, attempts to enter a `docker` group subshell if your shell session hasn't refreshed group membership yet, and waits until `GET /health/ready` passes.
+```bash
+npm i supabase@beta --save-dev
+```
 
-## Core Endpoints
-POST /api/v1/music/generate/full-song → Start full pipeline (returns project_id).
-GET  /api/v1/music/project/{project_id}/aggregate → Consolidated project + stage metadata + computed progress.
-GET  /api/v1/music/project/{project_id}/status → Lightweight status (subset).
-GET  /health, /health/ready → Liveness / readiness.
-WebSocket: /ws → Subscribe with `{ "action":"subscribe", "project_id":"<id>" }` to receive events.
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-## WebSocket Event Types
-stage.started, stage.progress, stage.completed, project.completed, project.failed.
-Each event includes minimal envelope plus `project_id`, `stage`, and when applicable `progress` (0..1) or `error`.
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
 
-## Auth (Development Mode)
-In FAST_DEV the frontend retrieves a temporary dev JWT via `/api/v1/dev/token`. Do NOT expose this endpoint in production (disable FAST_DEV / set environment to production & gate dev routers accordingly).
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
 
-## Environment Variables
-Defined in `.env.example` (all prefixed with `AIMUSIC_`). Key vars:
-- AIMUSIC_SECRET_KEY – JWT signing key (rotate for production)
-- AIMUSIC_DATABASE_URL – Async SQLAlchemy database URL
-- AIMUSIC_REDIS_URL – Redis instance (caching / future task coordination)
-- AIMUSIC_ALLOWED_ORIGINS – Comma list for CORS
-- AIMUSIC_FAST_DEV – Enables dev token endpoint & permissive defaults
-- AIMUSIC_ENVIRONMENT – development | staging | production
+<details>
+  <summary><b>macOS</b></summary>
 
-Feature flags (all boolean): `AIMUSIC_ENABLE_BLOCKCHAIN`, `AIMUSIC_ENABLE_COLLABORATION`, `AIMUSIC_ENABLE_MARKETPLACE`, `AIMUSIC_ENABLE_ENTERPRISE`.
+  Available via [Homebrew](https://brew.sh). To install:
 
-## Running Tests
-Backend tests (selected): `python run_tests.py` or targeted scripts (see `tests/` / `test_*.py`). Add persistent DB & migrate state before enabling DB‑backed orchestration tests.
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-## Deployment (Beta)
-1. Build image: `docker build -t aimusic:beta .`
-2. Run with external Postgres + Redis (supply URLs via env vars; do not rely on in‑memory orchestrator for durability).
-3. Set `AIMUSIC_ENVIRONMENT=production`, `AIMUSIC_FAST_DEV=false`, restrict `AIMUSIC_ALLOWED_ORIGINS`.
-4. Provide strong `AIMUSIC_SECRET_KEY`.
-5. Add reverse proxy (e.g., Nginx / Caddy) for TLS termination and caching of static assets.
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
 
-## Production Hardening Roadmap
-- [ ] Persist project + stage state (replace in‑memory) in Postgres tables.
-- [ ] Background task queue (Celery / RQ / custom) for long stages & retry semantics.
-- [ ] Replace dev JWT with real user auth (OAuth / email magic link / etc.).
-- [ ] Add rate limiting + abuse detection (currently basic values in settings).
-- [ ] Structured log export (e.g., to ELK / Loki) & error tracking (Sentry).
-- [ ] Observability: metrics endpoint (Prometheus) + dashboards.
-- [ ] CI/CD: build, test, scan, push image, migration step, deploy.
-- [ ] Version metadata injection (commit hash, build timestamp endpoint).
-- [ ] Security review (dependency scanning, secret scanning, CORS tighten, headers middleware).
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
 
-See `BETA_LAUNCH_CHECKLIST.md` for current status tracking.
+<details>
+  <summary><b>Windows</b></summary>
 
-## Contributing
-1. Fork / branch
-2. Add or update tests for behavior changes
-3. Run lint/tests locally
-4. Submit PR with concise description + risk notes
+  Available via [Scoop](https://scoop.sh). To install:
 
-## License
-MIT (see `LICENSE`).
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
 
-## Disclaimer
-Beta software – expect breaking changes while persistence & authentication layers mature.
+  To upgrade:
 
+  ```powershell
+  scoop update supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Linux</b></summary>
+
+  Available via [Homebrew](https://brew.sh) and Linux packages.
+
+  #### via Homebrew
+
+  To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+
+  #### via Linux packages
+
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
+
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
+
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
+
+```bash
+supabase bootstrap
+```
+
+Or using npx:
+
+```bash
+npx supabase bootstrap
+```
+
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
+```

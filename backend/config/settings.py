@@ -82,7 +82,6 @@ class Settings(BaseSettings):
     # AI Models
     model_cache_dir: str = "models"
     huggingface_token: Optional[str] = None
-    openai_api_key: Optional[str] = None
     
     # Audio Processing
     sample_rate: int = 44100
