@@ -27,7 +27,6 @@ RUN for req in requirements-*.txt; do [ -f "$req" ] && pip install -r "$req" || 
 
 # Copy application files
 COPY app.py ./
-COPY .env ./
 COPY scripts/entrypoint-simple.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 

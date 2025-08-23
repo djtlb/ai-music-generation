@@ -28,7 +28,6 @@ coverage
 htmlcov
 
 # Local configs/secrets (real .env copied separately if needed)
-.env
 .env.*
 !*.example
 
