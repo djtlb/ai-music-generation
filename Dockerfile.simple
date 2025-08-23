@@ -1,0 +1,47 @@
+# Simple Dockerfile for AI Music Generation Platform
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+# System dependencies for audio processing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ffmpeg \
+        libsndfile1 \
+        git \
+        curl \
+        build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements files
+COPY core-requirements.txt ./
+COPY requirements-*.txt ./
+
+# Install Python dependencies
+RUN pip install --upgrade pip
+RUN pip install -r core-requirements.txt || echo "Core requirements installed"
+RUN for req in requirements-*.txt; do [ -f "$req" ] && pip install -r "$req" || echo "Skipping $req"; done
+
+# Copy application files
+COPY app.py ./
+COPY .env ./
+COPY scripts/entrypoint-simple.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Create directories for generated content
+RUN mkdir -p /app/generated_audio /app/uploads
+
+# Create non-root user
+RUN useradd -m appuser && chown -R appuser:appuser /app
+USER appuser
+
+ENV ENV=production \
+    LOG_LEVEL=INFO \
+    PORT=8000
+
+EXPOSE 8000
+
+ENTRYPOINT ["/app/entrypoint.sh"]

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  aimusic:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+    container_name: aimusic_simple
+    env_file:
+      - .env
+    environment:
+      ENV: development
+      LOG_LEVEL: info
+      PORT: 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./generated_audio:/app/generated_audio
+      - ./uploads:/app/uploads
+      - ./app.py:/app/app.py  # For development hot reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
