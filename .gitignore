@@ -31,3 +31,23 @@ packages
 .devcontainer/
 
 .spark-workbench-id
+
+# Python
+venv/
+backend/venv/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Local artifacts
+generated_audio/
+*.wav
+*.mp3
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# CLI builds
+cli/
