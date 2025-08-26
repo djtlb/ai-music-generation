@@ -3,7 +3,6 @@
 import os
 import uuid
 import wave
-import numpy as np
 from datetime import datetime
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
@@ -62,10 +61,7 @@ async def home():
     </html>
     """
 
-
-from fastapi.responses import FileResponse
-import wave
-import numpy as np
+ 
 
 GENERATED_AUDIO_DIR = "generated_audio"
 os.makedirs(GENERATED_AUDIO_DIR, exist_ok=True)
@@ -79,12 +75,12 @@ async def generate(request: Request):
     audio_path = os.path.join(GENERATED_AUDIO_DIR, f"{project_id}.wav")
     framerate = 44100
     duration = 1
-    samples = np.zeros(framerate * duration, dtype=np.int16)
+    silence_frames = (b"\x00\x00") * (framerate * duration)
     with wave.open(audio_path, 'w') as wf:
         wf.setnchannels(1)
         wf.setsampwidth(2)
         wf.setframerate(framerate)
-        wf.writeframes(samples.tobytes())
+        wf.writeframes(silence_frames)
     project = {
         "id": project_id,
         "prompt": prompt,
