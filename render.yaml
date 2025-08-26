@@ -1,8 +1,13 @@
 services:
-  - type: web
-    name: ai-music-generator
-    env: python
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn -w 4 -k uvicorn.workers.UvicornWorker app:app"
-    healthCheckPath: /health
+- type: web
+  name: ai-music-generator
+  runtime: python
+  plan: free
+  region: oregon
+  pythonVersion: "3.11"
+  buildCommand: |
+    pip install --upgrade pip
+    pip install -r requirements.txt
+  startCommand: gunicorn -w 4 -k uvicorn.workers.UvicornWorker app:app
+  healthCheckPath: /health
+  autoDeploy: true
