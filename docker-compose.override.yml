@@ -1,0 +1,44 @@
+services:
+  api:
+    ports:
+      - "8000:8000"
+    environment:
+      # Override for production server
+      ENV: production
+      # Ensure CORS is properly configured
+      CORS_ORIGINS: "*"
+      # Ensure API key is set
+      API_KEY: "ai-music-gen-horizon-2024"
+      # Set network settings for better performance
+      UVICORN_WORKERS: 4
+      # Enable GPU if available
+      USE_GPU: "1"
+      # Enable real audio generation
+      ENABLE_REAL_AUDIO: "1"
+      # Set maximum audio generation time
+      MAX_GENERATION_TIME: 300
+    volumes:
+      # Extra volume mounts for persistent storage
+      - ./generated_audio:/app/generated_audio
+      - ./uploads:/app/uploads
+      # Mount a host audio folder to ensure files are accessible
+      - /var/www/html/audio:/app/public_audio
+    healthcheck:
+      # Improved healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    # Add extra hosts entry to ensure backend can access itself
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Improve network settings
+    networks:
+      - ai_music_net
+
+# Create a custom network with better connectivity
+networks:
+  ai_music_net:
+    driver: bridge

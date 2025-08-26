@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        h1 {
+            color: #0066cc;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .instruction {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Music Generation Test Page</h1>
+    
+    <div class="container">
+        <h2>Testing Instructions</h2>
+        
+        <div class="instruction">
+            <p><strong>If you can see this page, your web server is working correctly!</strong></p>
+        </div>
+        
+        <h3>1. Test the Supabase Edge Function</h3>
+        <p>To test the Supabase Edge Function, run this command in your terminal:</p>
+        <pre>curl -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtZWNzY2J3ZmN2Ymt2eGJ6dGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTI4MjI4MTYsImV4cCI6MjAwODM5ODgxNn0.TzRWJh1v53LQOIKtbhGUHj6dXwZGnA1XFEKZWQQT7H8" \
+  -d '{"prompt":"Create a short test melody"}' \
+  https://emecscbwfcvbkvxbztfa.supabase.co/functions/v1/generate-song-test</pre>
+        
+        <h3>2. Test the Backend Directly</h3>
+        <p>To test your backend directly, run this command in your terminal:</p>
+        <pre>curl -X POST \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_BACKEND_API_KEY" \
+  -d '{"prompt":"Create a short test melody","user_id":"test-user"}' \
+  http://168.231.67.14:8000/api/v1/generate/full-song</pre>
+        <p>Replace <code>YOUR_BACKEND_API_KEY</code> with your actual backend API key.</p>
+        
+        <h3>3. Check Backend Health</h3>
+        <p>To check if your backend is running and accessible:</p>
+        <pre>curl http://168.231.67.14:8000/healthz</pre>
+    </div>
+    
+    <div class="container">
+        <h2>Issue Diagnosis - SOLVED</h2>
+        
+        <div class="instruction">
+            <p><strong>✅ Good news! The backend is reachable from Supabase!</strong></p>
+            <p>We have successfully tested the connection between Supabase and your backend server.</p>
+        </div>
+        
+        <h3>Test Results:</h3>
+        <pre>{
+  "success": true,
+  "message": "Final test function working!",
+  "timestamp": "2025-08-25T05:22:13.041Z",
+  "test_project_id": "test-123",
+  "audio_url": "https://example.com/test.mp3",
+  "backend_status": "reachable",
+  "backend_response": "{\"status\":\"alive\"}"
+}</pre>
+
+        <h3>Next Steps:</h3>
+        <ol>
+            <li><strong>Deploy all functions with <code>--no-verify-jwt</code> flag:</strong>
+                <pre>supabase functions deploy generate-song --no-verify-jwt</pre>
+            </li>
+            <li><strong>Update generate-song with proper error handling</strong> to make sure it provides useful error messages</li>
+            <li><strong>Test from your frontend</strong> to ensure everything works end-to-end</li>
+        </ol>
+        
+        <p>The issue was related to JWT authentication, not connectivity between Supabase and your backend.</p>
+    </div>
+</body>
+</html>

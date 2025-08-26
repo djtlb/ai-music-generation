@@ -1,0 +1,11 @@
+torch
+pyyaml
+mido
+tensorboard
+accelerate
+scipy
+matplotlib
+soundfile
+librosa
+audiocraft
+numpy==1.24.4

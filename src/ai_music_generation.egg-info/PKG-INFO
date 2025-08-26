@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: ai-music-generation
+Version: 0.1.0
+Summary: AI Music Generation with Hierarchical LoRA Adapters
+Author: Your Name
+Author-email: your.email@example.com
+License-File: LICENSE

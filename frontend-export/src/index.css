@@ -1,0 +1,147 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 224 71% 4%; /* Deep Space Blue */
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%; /* Darker card color */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 262 88% 66%; /* Electric Violet */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 222 47% 11%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 222 47% 11%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 326 100% 74%; /* Neon Pink */
+    --accent-foreground: 224 71% 4%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 262 88% 66%;
+
+    --radius: 0.8rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Onest', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    overflow-x: hidden; /* Prevent horizontal scroll for moving backgrounds */
+  }
+
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+    background-size: cover;
+    mix-blend-mode: overlay; /* Blend colors nicely */
+    filter: blur(100px); /* Soften the edges */
+    opacity: 0.4; /* Make them subtle */
+  }
+
+  body::before {
+    background: radial-gradient(ellipse 50% 50% at 50% -20%, hsl(var(--primary) / 0.5), transparent 80%);
+    animation: aurora-primary 30s infinite alternate ease-in-out;
+  }
+
+  body::after {
+    background: radial-gradient(circle 500px at 100% 100%, hsl(var(--accent) / 0.4), transparent 80%);
+    animation: aurora-accent 35s infinite alternate ease-in-out;
+  }
+}
+
+@keyframes aurora-primary {
+  0% { transform: translate(10%, -10%) rotate(0deg) scale(1.1); opacity: 0.3; }
+  50% { transform: translate(-10%, 10%) rotate(180deg) scale(1.3); opacity: 0.6; }
+  100% { transform: translate(10%, -10%) rotate(360deg) scale(1.1); opacity: 0.3; }
+}
+
+@keyframes aurora-accent {
+  0% { transform: translate(-5%, 5%) rotate(0deg) scale(1); opacity: 0.2; }
+  50% { transform: translate(5%, -5%) rotate(-180deg) scale(1.2); opacity: 0.5; }
+  100% { transform: translate(-5%, 5%) rotate(-360deg) scale(1); opacity: 0.2; }
+}
+
+.button-glow {
+  @apply relative overflow-hidden;
+}
+
+.button-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(110deg, transparent 30%, hsl(var(--primary-foreground) / 0.2), transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.button-glow:hover::before {
+  transform: translateX(100%);
+}
+
+.nav-link {
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 text-slate-300 hover:bg-white/5 hover:text-white font-medium relative text-base;
+}
+
+.nav-link.active {
+  @apply bg-primary/10 text-primary font-semibold;
+}
+
+.nav-link.active .nav-link-glow {
+  opacity: 1;
+}
+
+.nav-link .nav-link-glow {
+  @apply absolute top-0 left-0 w-full h-full bg-gradient-to-r from-primary/10 to-transparent opacity-0 transition-opacity duration-500 rounded-lg pointer-events-none;
+}
+
+.nav-link:hover .nav-link-glow {
+  opacity: 0.5;
+}
+
+
+/* Scrollbar styles for a more modern look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background)); /* Darker track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.7); /* Primary color for thumb */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary)); /* Brighter on hover */
+}

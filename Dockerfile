@@ -30,15 +30,16 @@ COPY backend/requirements.txt backend/requirements.txt
 COPY backend/requirements-prod.txt backend/requirements-prod.txt
 RUN pip install --upgrade pip && pip install -r backend/requirements-prod.txt
 
+# Create non-root user first
+RUN useradd -m appuser
+# Ensure static directory exists and is owned by appuser
+RUN mkdir -p /app/static && chown appuser:appuser /app/static
 # Copy application (only backend + built frontend assets)
 COPY backend /app/backend
 COPY --from=frontend /app/dist /app/dist
 COPY .env.example /app/.env.example
 COPY scripts/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
-
-# Create non-root user
-RUN useradd -m appuser
 USER appuser
 
 ENV ENV=production \

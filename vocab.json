@@ -1,0 +1,19 @@
+{
+  "PAD": 0,
+  "NOTE_ON_C4": 1,
+  "NOTE_ON_D4": 2,
+  "NOTE_ON_E4": 3,
+  "NOTE_ON_F4": 4,
+  "NOTE_ON_G4": 5,
+  "NOTE_OFF_C4": 6,
+  "NOTE_OFF_D4": 7,
+  "NOTE_OFF_E4": 8,
+  "NOTE_OFF_F4": 9,
+  "NOTE_OFF_G4": 10,
+  "DURATION_QUARTER": 11,
+  "DURATION_HALF": 12,
+  "DURATION_WHOLE": 13,
+  "VELOCITY_SOFT": 14,
+  "VELOCITY_MEDIUM": 15,
+  "VELOCITY_LOUD": 16
+}

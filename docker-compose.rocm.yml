@@ -1,0 +1,52 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.rocm
+    container_name: aimusic_api
+    env_file:
+      - .env
+    environment:
+      ENV: production
+      FAST_DEV: "0"
+      ALLOW_MISSING_OPTIONALS: "0"
+      PYTHONPATH: /app/backend
+      USE_GUNICORN: "1"
+      LOG_LEVEL: info
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app/backend
+      - ./generated_audio:/app/generated_audio
+      - ./uploads:/app/uploads
+    devices:
+      - "/dev/kfd:/dev/kfd"
+      - "/dev/dri:/dev/dri"
+    group_add:
+      - video
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: aimusicgen
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
+
+volumes:
+  pgdata: {}

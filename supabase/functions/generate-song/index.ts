@@ -1,127 +1,105 @@
-import { serve } from "https://deno.land/std@0.208.0/http/server.ts"
+/// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS'
-}
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { corsHeaders } from '../_shared/cors.ts' // Import our new shared headers
 
-// Simple interface for the request
-interface GenerateRequest {
-  prompt: string
-  genre?: string
-  duration?: number
-  user_id?: string
-}
+serve(async (req) => {
+  // This block is new! It handles the browser's permission check.
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
 
-// Function to call your VPS backend
-async function generateMusic(prompt: string, genre: string, duration: number): Promise<{
-  success: boolean
-  project_id?: string
-  message?: string
-  error?: string
-}> {
   try {
-    // Call your VPS FastAPI backend
-    const FASTAPI_URL = 'http://168.231.67.14:8000/generate'
-    
-    const response = await fetch(FASTAPI_URL, {
+    // Get the backend API key from the Supabase secrets we set earlier.
+    const backendApiKey = Deno.env.get('BACKEND_API_KEY')
+    if (!backendApiKey) {
+      throw new Error('BACKEND_API_KEY is not set in Supabase secrets.')
+    }
+
+    // Get the user's prompt from the request.
+    const { prompt } = await req.json()
+    if (!prompt) {
+      throw new Error('Prompt is required')
+    }
+
+    // Call your actual backend on the VPS to start generation.
+    const FASTAPI_URL = (Deno.env.get('BACKEND_URL') || 'http://localhost:8000') + '/api/v1/generate/full-song'
+    const backendResponse = await fetch(FASTAPI_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': backendApiKey, // Use the secret key to authenticate with your backend.
       },
-      body: JSON.stringify({
-        prompt,
-        genre,
-        duration
-      })
+      body: JSON.stringify({ prompt: prompt, user_id: 'website-user' }), // Send the prompt and a user ID.
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('FastAPI backend error:', errorText)
-      return {
-        success: false,
-        error: `FastAPI backend error: ${response.status} ${response.statusText}`
-      }
+    if (!backendResponse.ok) {
+      const errorBody = await backendResponse.text()
+      throw new Error(`Backend error: ${errorBody}`)
     }
 
-    const result = await response.json()
+    const startData = await backendResponse.json()
     
-    // Handle the response from your FastAPI backend
-    if (result.project_id || result.status === 'completed') {
-      return {
-        success: true,
-        project_id: result.project_id,
-        message: result.message || 'Music generated successfully!'
+    // If we get a project_id, poll for completion
+    if (startData.project_id) {
+      const projectId = startData.project_id
+      let attempts = 0
+      const maxAttempts = 60 // Wait up to 5 minutes (60 attempts * 5 seconds)
+      
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 5000)) // Wait 5 seconds
+        
+        // Check project status
+        const status_url = (Deno.env.get('BACKEND_URL') || 'http://localhost:8000') + `/api/v1/project/${projectId}/status`
+        const statusResponse = await fetch(status_url, {
+          method: 'GET',
+          headers: {
+            'x-api-key': backendApiKey,
+          },
+        })
+        
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json()
+          
+          if (statusData.status === 'completed') {
+            // Return the completed song - check different possible audio fields
+            const stages = statusData.stages || {}
+            const mixMasterStage = stages.mix_master || {}
+            const audioUrl = statusData.audio_url || mixMasterStage.final_audio_url || statusData.result_url
+            
+            return new Response(JSON.stringify({
+              success: true,
+              audio_url: audioUrl ? (Deno.env.get('BACKEND_URL') || 'http://localhost:8000') + audioUrl : null,
+              project_id: projectId,
+              message: 'Song generation completed',
+              status: statusData
+            }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 200,
+            })
+          } else if (statusData.status === 'failed' || statusData.status === 'error') {
+            throw new Error('Song generation failed: ' + (statusData.error || 'Unknown error'))
+          }
+          // If still processing, continue polling
+        }
+        
+        attempts++
       }
-    } else {
-      return {
-        success: false,
-        error: result.error || 'Unknown error from FastAPI backend'
-      }
+      
+      // If we reach here, it timed out
+      throw new Error('Song generation timed out')
     }
-    
+
+    // Fallback: return the original response if no project_id
+    return new Response(JSON.stringify(startData), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    })
   } catch (error) {
-    console.error('Music generation error:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error)
-    }
-  }
-}
-
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
-
-  if (req.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed. Use POST.' }), 
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 405 }
-    )
-  }
-
-  try {
-    // Parse request body
-    const { prompt, genre = 'electronic', duration = 30, user_id }: GenerateRequest = await req.json()
-
-    if (!prompt) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required field: prompt' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-    
-    console.log(`Generating music: ${prompt} (genre: ${genre}, duration: ${duration}s)`)
-    
-    // Generate music using your VPS backend
-    const result = await generateMusic(prompt, genre, duration)
-    
-    if (!result.success) {
-      return new Response(
-        JSON.stringify({ error: result.error }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Return success response
-    return new Response(
-      JSON.stringify({
-        success: true,
-        project_id: result.project_id,
-        message: result.message
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
-  } catch (error) {
-    console.error('Edge Function error:', error)
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    // Return an error response to the browser, including the CORS headers.
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    })
   }
 })

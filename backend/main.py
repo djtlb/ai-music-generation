@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 
 import structlog
 import uvicorn
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks, Depends, Response
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks, Depends, Response, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, FileResponse
@@ -137,13 +137,15 @@ async def readiness_probe_alt():
     """Alternative path for readiness probe."""
     return await readiness_probe()
 
-# Create directories for static files
-os.makedirs("static", exist_ok=True)
-os.makedirs("generated_audio", exist_ok=True)
+# Create directories for static files (using paths with proper permissions)
+static_dir = os.getenv("STATIC_DIR", "/tmp/static")
+audio_dir = os.getenv("GENERATED_AUDIO_DIR", "/tmp/generated_audio")
+os.makedirs(static_dir, exist_ok=True)
+os.makedirs(audio_dir, exist_ok=True)
 
 # Mount static files
-if Path("static").exists():
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+if Path(static_dir).exists():
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 if Path("generated_audio").exists():
     app.mount("/audio", StaticFiles(directory="generated_audio"), name="audio")
 
@@ -264,11 +266,16 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
         logger.error(f"WebSocket error for client {client_id}: {str(e)}")
         websocket_manager.disconnect(client_id)
 
-# API key verification (simple mock)
-async def verify_api_key(api_key: str = "test-api-key-123"):
+
+# API key verification (dev-friendly)
+async def verify_api_key(api_key: str = Header(..., alias="x-api-key")):
+    env = os.getenv("ENV", "production")
+    if env == "development":
+        return api_key
     if api_key != settings.API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API key")
     return api_key
+
 
 @app.post("/api/v1/generate/full-song")
 async def generate_full_song(
@@ -278,21 +285,22 @@ async def generate_full_song(
 ):
     """Generate a complete song using the full AI pipeline"""
     try:
+        env = os.getenv("ENV", "production")
         project_name = request.get("project_name", "Untitled Song")
         style_config = request.get("style_config", {})
         user_id = request.get("user_id")
         advanced_options = request.get("advanced_options", {})
         
-        if not user_id:
+        if not user_id and env != "development":
             raise HTTPException(status_code=400, detail="user_id is required")
-        
+        if not user_id:
+            user_id = "dev-user"
         # Create project
         project_id = await ai_orchestrator.create_project(
             name=project_name,
             user_id=user_id,
             style_config=style_config
         )
-        
         # Start generation in background
         background_tasks.add_task(
             ai_orchestrator.generate_full_song,
@@ -302,7 +310,6 @@ async def generate_full_song(
             websocket_manager=websocket_manager,
             user_id=user_id
         )
-        
         return {
             "message": "Song generation started",
             "project_id": project_id,
@@ -310,7 +317,6 @@ async def generate_full_song(
             "websocket_url": f"/ws/{user_id}",
             "status_endpoint": f"/api/v1/projects/{project_id}/status"
         }
-        
     except Exception as e:
         logger.error(f"Full song generation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

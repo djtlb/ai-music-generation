@@ -6,11 +6,11 @@ services:
       - .env
     environment:
       # Dev-friendly runtime (override in production)
-      ENV: development
-      FAST_DEV: "1"
-      ALLOW_MISSING_OPTIONALS: "1"
+      ENV: production
+      FAST_DEV: "0"
+      ALLOW_MISSING_OPTIONALS: "0"
       PYTHONPATH: /app/backend
-      USE_GUNICORN: "0"   # use uvicorn directly for quicker restarts
+      USE_GUNICORN: "1"   # use uvicorn directly for quicker restarts
       LOG_LEVEL: info
     ports:
       - "8000:8000"

@@ -1,7 +1,3 @@
-"""
-Requirements for FAISS hierarchical retrieval system.
-"""
-
 # Core dependencies
 faiss-cpu>=1.7.4
 numpy>=1.21.0

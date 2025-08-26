@@ -18,11 +18,82 @@ import torch
 from pathlib import Path
 
 # Add src to path for imports
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 
 from models.adapters.training_utils import ParentAdapterTrainer
 from models.tokenizer import MIDITokenizer
 from models.mh_transformer import MelodyHarmonyTransformer
+
+
+def setup_logging(output_dir: str, parent_style: str):
+    """Setup logging configuration."""
+    log_dir = Path(output_dir) / 'logs'
+    log_dir.mkdir(parents=True, exist_ok=True)
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_dir / f'parent_{parent_style}_training.log'),
+            logging.StreamHandler()
+        ]
+    )
+
+
+def load_base_model(model_config: dict) -> tuple[torch.nn.Module, MIDITokenizer]:
+    """Load the base transformer model for adaptation."""
+    # Load tokenizer to get vocab size
+    tokenizer = MIDITokenizer()
+    if os.path.exists('vocab.json'):
+        tokenizer.load_vocab('vocab.json')
+    else:
+        raise FileNotFoundError("Tokenizer vocabulary not found. Run tokenizer training first.")
+    
+    # Create base model
+    model_config['vocab_size'] = len(tokenizer.vocab)
+    model = MelodyHarmonyTransformer(**model_config)
+    
+    # Load pre-trained weights if available
+    pretrained_path = 'checkpoints/base_model.pt'
+    if os.path.exists(pretrained_path):
+        checkpoint = torch.load(pretrained_path, map_location='cpu')
+        model.load_state_dict(checkpoint['model_state_dict'])
+        print(f"Loaded pre-trained weights from {pretrained_path}")
+    else:
+        print("No pre-trained weights found, starting from random initialization")
+    
+    return model, tokenizer
+
+
+def validate_style_pack(pack_dir: str, parent_style: str) -> bool:
+    """Validate that the style pack contains required data."""
+    pack_path = Path(pack_dir)
+    
+    if not pack_path.exists():
+        print(f"Style pack directory not found: {pack_dir}")
+        return False
+    
+    # Check for required subdirectories
+    required_dirs = ['refs_midi', 'refs_audio']
+    
+    for req_dir in required_dirs:
+        if not (pack_path / req_dir).exists():
+            print(f"Missing required directory: {req_dir}")
+            return False
+    
+    # Check for metadata
+    meta_path = pack_path / 'meta.json'
+    if not meta_path.exists():
+        print(f"Warning: No meta.json found in {pack_dir}")
+    
+    # Check for MIDI files
+    midi_files = list((pack_path / 'refs_midi').glob('*.mid*'))
+    if len(midi_files) == 0:
+        print(f"No MIDI files found in {pack_path / 'refs_midi'}")
+        return False
+    
+    print(f"Style pack validation passed: {len(midi_files)} MIDI files found")
+    return True
 
 
 def setup_logging(output_dir: str, parent_style: str):

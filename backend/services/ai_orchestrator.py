@@ -1,3 +1,4 @@
+from backend.services.direct_gpu_audio import generate_audio_with_gpu
 """
 AI Orchestrator Service - The brain of the music generation system
 """
@@ -15,6 +16,8 @@ try:
     from repositories import project_repository as project_repo  # type: ignore
 except ModuleNotFoundError:
     from backend.repositories import project_repository as project_repo  # type: ignore
+
+from backend.services.gpu_patch import generate_test_audio_with_gpu
 
 logger = logging.getLogger(__name__)
 
@@ -320,12 +323,15 @@ class AIOrchestrator:
             stage_complete("sound_design")
             await push("stage.completed", {"project_id": project_id, "stage": "sound_design", "project_progress": project.get("progress")})
             
-            # Stage 5: Mix & Master (Mock)
+            # Stage 5: Mix & Master (GPU ACCELERATED)
             stage_start("mix_master")
-            await asyncio.sleep(2)
+            
+            # Use GPU for audio generation if available
+            audio_url = generate_test_audio_with_gpu(project_id)
+            
             project["stages"]["mix_master"] = {
                 "id": str(uuid.uuid4()),
-                "final_audio_url": f"/audio/{project_id}_final.wav",
+                "final_audio_url": audio_url,
                 "stems_available": True,
                 "mastering_settings": {"lufs": -14, "dynamic_range": "medium"},
                 "created_at": datetime.utcnow().isoformat()

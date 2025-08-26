@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Music Generator Pro Subscription</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f7;
+            color: #333;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #0071e3;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0051a3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: #f0f8ff;
+            display: none;
+        }
+        .error {
+            color: #d9534f;
+            background-color: #fdf7f7;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+        .success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+        .status {
+            color: #31708f;
+            background-color: #d9edf7;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+        .subscription-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #0071e3;
+        }
+        .subscription-card h3 {
+            margin-top: 0;
+            color: #0071e3;
+        }
+        .subscription-card ul {
+            padding-left: 20px;
+        }
+        .subscription-card li {
+            margin-bottom: 8px;
+        }
+        .price {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .form-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: white;
+            height: 42px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 AI Music Generator Pro</h1>
+        
+        <div class="subscription-card">
+            <h3>Pro Subscription</h3>
+            <div class="price">$19.99/month</div>
+            <ul>
+                <li>Generate unlimited songs</li>
+                <li>Priority processing</li>
+                <li>Higher quality audio</li>
+                <li>Access to all music styles</li>
+                <li>Commercial usage rights</li>
+                <li>Download in multiple formats</li>
+            </ul>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="your@email.com">
+        </div>
+        
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" placeholder="Your Name">
+        </div>
+        
+        <h3>Billing Address</h3>
+        <div class="form-group">
+            <label for="address-line1">Address Line 1:</label>
+            <input type="text" id="address-line1" placeholder="123 Main St">
+        </div>
+        
+        <div class="form-group">
+            <label for="address-line2">Address Line 2 (Optional):</label>
+            <input type="text" id="address-line2" placeholder="Apt, Suite, etc.">
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="city">City:</label>
+                <input type="text" id="city" placeholder="City">
+            </div>
+            
+            <div class="form-group">
+                <label for="state">State/Province:</label>
+                <input type="text" id="state" placeholder="State">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="postal-code">Postal Code:</label>
+                <input type="text" id="postal-code" placeholder="Postal Code">
+            </div>
+            
+            <div class="form-group">
+                <label for="country">Country:</label>
+                <select id="country">
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="AU">Australia</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
+                    <!-- Add more countries as needed -->
+                </select>
+            </div>
+        </div>
+        
+        <div id="payment-element">
+            <!-- Stripe Elements will be inserted here -->
+        </div>
+        
+        <div id="error-message" class="error"></div>
+        <div id="success-message" class="success"></div>
+        
+        <button id="submit-button" type="button">Subscribe Now</button>
+    </div>
+
+    <script type="module">
+        import { createCustomer, createSubscription, createSetupIntent, initStripe } from '/frontend/lib/stripe.js';
+        
+        let stripe;
+        let elements;
+        let cardElement;
+        let customerId;
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                stripe = initStripe();
+                
+                // Initialize payment element
+                const appearance = {
+                    theme: 'stripe',
+                    variables: {
+                        colorPrimary: '#0071e3',
+                    },
+                };
+                
+                // Create the card element
+                elements = stripe.elements();
+                cardElement = elements.create('card', { appearance });
+                cardElement.mount('#payment-element');
+                
+                // Add event listener for the submit button
+                document.getElementById('submit-button').addEventListener('click', handleSubscription);
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+        
+        async function handleSubscription() {
+            const email = document.getElementById('email').value;
+            const name = document.getElementById('name').value;
+            const addressLine1 = document.getElementById('address-line1').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const postalCode = document.getElementById('postal-code').value;
+            const country = document.getElementById('country').value;
+            
+            if (!email || !name || !addressLine1 || !city || !state || !postalCode || !country) {
+                showError('Please fill in all required fields');
+                return;
+            }
+            
+            const submitButton = document.getElementById('submit-button');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processing...';
+            
+            try {
+                // 1. Create customer
+                showStatus('Creating your account...');
+                const customerData = await createCustomer(email, name);
+                customerId = customerData.customerId;
+                
+                // 2. Create setup intent for attaching payment method
+                showStatus('Setting up payment method...');
+                const setupIntentData = await createSetupIntent(customerId);
+                
+                // 3. Confirm the setup with the card element
+                showStatus('Confirming payment details...');
+                const result = await stripe.confirmCardSetup(setupIntentData.clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: name,
+                            email: email,
+                            address: {
+                                line1: addressLine1,
+                                line2: document.getElementById('address-line2')?.value || '',
+                                city: city,
+                                state: state,
+                                postal_code: postalCode,
+                                country: country
+                            }
+                        }
+                    }
+                });
+                
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+                
+                // 4. Create subscription with the attached payment method
+                showStatus('Activating your subscription...');
+                const addressInfo = {
+                    line1: addressLine1,
+                    line2: document.getElementById('address-line2')?.value || '',
+                    city: city,
+                    state: state,
+                    postal_code: postalCode,
+                    country: country
+                };
+                
+                const subscriptionData = await createSubscription(customerId, undefined, addressInfo);
+                
+                // 5. Show success message
+                showSuccess(`Subscription created successfully! Your subscription ID is: ${subscriptionData.subscriptionId}`);
+                
+                // Reset form
+                document.getElementById('email').value = '';
+                document.getElementById('name').value = '';
+                document.getElementById('address-line1').value = '';
+                document.getElementById('address-line2').value = '';
+                document.getElementById('city').value = '';
+                document.getElementById('state').value = '';
+                document.getElementById('postal-code').value = '';
+                cardElement.clear();
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Subscribe Now';
+            }
+        }
+        
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            document.getElementById('success-message').style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            const successElement = document.getElementById('success-message');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        function showStatus(message) {
+            const statusElement = document.getElementById('success-message');
+            statusElement.textContent = message;
+            statusElement.style.display = 'block';
+            statusElement.className = 'status';
+        }
+    </script>
+</body>
+</html>

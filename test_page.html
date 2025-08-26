@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Music Generation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+        }
+        .error {
+            background-color: #ffdddd;
+            border-left: 6px solid #f44336;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        audio {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 AI Music Generation Test</h1>
+    
+    <div class="container">
+        <h2>Generate Music</h2>
+        <p>Enter a prompt describing the kind of music you want to generate:</p>
+        
+        <textarea id="prompt" placeholder="Example: Create an upbeat pop song with catchy melody and a strong chorus"></textarea>
+        
+        <button id="generateBtn" onclick="generateMusic()">Generate Music</button>
+        
+        <div id="status" class="status hidden"></div>
+        
+        <div id="result" class="hidden">
+            <h3>Response:</h3>
+            <pre id="responseJson"></pre>
+            
+            <div id="audioContainer" class="hidden">
+                <h3>Generated Music:</h3>
+                <audio id="audioPlayer" controls></audio>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - replace with your Supabase project details
+        const SUPABASE_URL = 'https://emecscbwfcvbkvxbztfa.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtZWNzY2J3ZmN2Ymt2eGJ6dGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTI4MjI4MTYsImV4cCI6MjAwODM5ODgxNn0.TzRWJh1v53LQOIKtbhGUHj6dXwZGnA1XFEKZWQQT7H8';
+        
+        let projectId = null;
+        let pollInterval = null;
+        
+        async function generateMusic() {
+            const prompt = document.getElementById('prompt').value.trim();
+            
+            if (!prompt) {
+                showStatus('Please enter a prompt for the music generation.', true);
+                return;
+            }
+            
+            // Disable button and show status
+            document.getElementById('generateBtn').disabled = true;
+            showStatus('Starting music generation. This may take several minutes...');
+            
+            try {
+                // Call the Supabase Edge Function
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-song`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+                
+                const data = await response.json();
+                
+                // Display the response
+                document.getElementById('responseJson').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('result').classList.remove('hidden');
+                
+                // Check if we have a project ID for polling
+                if (data.project_id) {
+                    projectId = data.project_id;
+                    showStatus(`Project created (ID: ${projectId}). Waiting for music generation to complete...`);
+                    
+                    // If we already have an audio URL, show it
+                    if (data.audio_url) {
+                        showAudio(data.audio_url);
+                    } else {
+                        // Start polling for status
+                        startPolling();
+                    }
+                } else {
+                    showStatus('No project ID received from the server.', true);
+                    document.getElementById('generateBtn').disabled = false;
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`Error: ${error.message}`, true);
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+        
+        function startPolling() {
+            // Clear any existing interval
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            
+            // Poll every 10 seconds
+            pollInterval = setInterval(checkStatus, 10000);
+            
+            // Also check immediately
+            checkStatus();
+        }
+        
+        async function checkStatus() {
+            if (!projectId) return;
+            
+            try {
+                // Call the Supabase Edge Function to check status
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/project-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({ project_id: projectId })
+                });
+                
+                const data = await response.json();
+                
+                // Update the status display
+                if (data.status === 'completed') {
+                    showStatus('Music generation completed!');
+                    
+                    // Stop polling
+                    clearInterval(pollInterval);
+                    
+                    // Enable button
+                    document.getElementById('generateBtn').disabled = false;
+                    
+                    // Show audio if available
+                    if (data.audio_url) {
+                        showAudio(data.audio_url);
+                    }
+                } else if (data.status === 'failed' || data.status === 'error') {
+                    showStatus(`Generation failed: ${data.error || 'Unknown error'}`, true);
+                    clearInterval(pollInterval);
+                    document.getElementById('generateBtn').disabled = false;
+                } else {
+                    // Still processing
+                    const progress = data.progress || 'unknown';
+                    showStatus(`Still processing... Progress: ${progress}%`);
+                }
+                
+            } catch (error) {
+                console.error('Error checking status:', error);
+                showStatus(`Error checking status: ${error.message}`, true);
+            }
+        }
+        
+        function showStatus(message, isError = false) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.classList.remove('hidden');
+            
+            if (isError) {
+                statusElement.classList.add('error');
+            } else {
+                statusElement.classList.remove('error');
+            }
+        }
+        
+        function showAudio(audioUrl) {
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.src = audioUrl;
+            
+            document.getElementById('audioContainer').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

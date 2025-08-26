@@ -1,15 +1,25 @@
+
 """Simple AI Music Generation for Horizon"""
 import os
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 import uuid
+import wave
+import numpy as np
 from datetime import datetime
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI(title="AI Music Generator")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://beataddicts.pro", "http://localhost:3000", "http://localhost:8000", "*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Simple in-memory storage
+
+# In-memory storage for demo; in production, use a database
 projects = {}
 
 @app.get("/", response_class=HTMLResponse)
@@ -52,24 +62,51 @@ async def home():
     </html>
     """
 
+
+from fastapi.responses import FileResponse
+import wave
+import numpy as np
+
+GENERATED_AUDIO_DIR = "generated_audio"
+os.makedirs(GENERATED_AUDIO_DIR, exist_ok=True)
+
 @app.post("/generate")
 async def generate(request: Request):
     data = await request.json()
+    prompt = data.get("prompt", "")
     project_id = str(uuid.uuid4())[:8]
-    
+    # Simulate audio generation: create a 1-second silent WAV file
+    audio_path = os.path.join(GENERATED_AUDIO_DIR, f"{project_id}.wav")
+    framerate = 44100
+    duration = 1
+    samples = np.zeros(framerate * duration, dtype=np.int16)
+    with wave.open(audio_path, 'w') as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(framerate)
+        wf.writeframes(samples.tobytes())
     project = {
         "id": project_id,
-        "prompt": data.get("prompt", ""),
+        "prompt": prompt,
         "status": "completed",
-        "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        "created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "audio_url": f"/audio/{project_id}"
     }
     projects[project_id] = project
-    
     return JSONResponse({
         "project_id": project_id,
         "status": "completed",
+        "audio_url": f"/audio/{project_id}",
         "message": "Music generated successfully!"
     })
+
+@app.get("/audio/{project_id}")
+async def get_audio(project_id: str):
+    audio_path = os.path.join(GENERATED_AUDIO_DIR, f"{project_id}.wav")
+    if os.path.exists(audio_path):
+        return FileResponse(audio_path, media_type="audio/wav", filename=f"{project_id}.wav")
+    return JSONResponse({"error": "Audio not found"}, status_code=404)
+
 
 @app.get("/health")
 async def health():
