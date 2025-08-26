@@ -6,8 +6,8 @@ services:
   region: oregon
   pythonVersion: "3.11"
   buildCommand: |
-  pip install --upgrade pip
-  pip install -r requirements-min.txt
+    pip install --upgrade pip
+    pip install -r requirements-min.txt
   startCommand: gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT app:app
   healthCheckPath: /health
   autoDeploy: true
