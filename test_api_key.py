@@ -1,9 +1,5 @@
-import requests
 import os
 import sys
-
-# Testing function for API key
-import os
 import requests
 
 def test_api_key(api_key):
@@ -29,12 +25,6 @@ def test_api_key(api_key):
     except requests.exceptions.RequestException as e:
         print(f"An error occurred while connecting to the backend: {e}")
         return False
-
-if __name__ == "__main__":
-    # This is a placeholder for a real API key.
-    # In a real application, you would get this from a secure source.
-    test_key = "your_test_api_key"
-    test_api_key(test_key)
 
 if __name__ == "__main__":
     # Test default key from .env
